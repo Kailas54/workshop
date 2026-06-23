@@ -3,7 +3,7 @@ module.exports = (io) => {
     console.log(`[Socket] User connected: ${socket.id}`);
 
     // Join a workshop session room
-    socket.on('joinSession', ({ sessionId, role, userId, name }) => {
+    socket.on('joinSession', async ({ sessionId, role, userId, name }) => {
       socket.join(sessionId);
       socket.sessionId = sessionId;
       socket.role = role;
@@ -15,6 +15,12 @@ module.exports = (io) => {
       // Notify the mentor/room about the new student
       if (role === 'student') {
         io.to(sessionId).emit('studentJoined', { userId, name, socketId: socket.id });
+      } else if (role === 'mentor') {
+        // If mentor joins, send them all currently connected students
+        const sockets = await io.in(sessionId).fetchSockets();
+        sockets.filter(s => s.role === 'student').forEach(s => {
+          socket.emit('studentJoined', { userId: s.userId, name: s.name, socketId: s.id });
+        });
       }
     });
 

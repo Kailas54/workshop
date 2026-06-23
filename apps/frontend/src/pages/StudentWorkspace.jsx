@@ -65,7 +65,11 @@ export default function StudentWorkspace() {
     socket.on('mentor:resolveHand', onResolveHand);
     socket.on('mentor:replyHand', onMentorReply);
 
-    socket.connect();
+    if (socket.connected) {
+      onConnect();
+    } else {
+      socket.connect();
+    }
 
     return () => {
       socket.off('connect', onConnect);

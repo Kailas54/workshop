@@ -104,7 +104,11 @@ export default function MentorDashboard() {
     socket.on('student:raiseHand', onRaiseHand);
     socket.on('studentLeft', onStudentLeft);
 
-    socket.connect();
+    if (socket.connected) {
+      onConnect();
+    } else {
+      socket.connect();
+    }
 
     return () => {
       socket.off('connect', onConnect);

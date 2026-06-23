@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import { Play, RotateCcw, Hand, Loader2 } from 'lucide-react';
+import { Play, RotateCcw, Hand, Loader2, Eye, X } from 'lucide-react';
 import { usePyodide } from './usePyodide';
 
 export function CodeEditor({ 
@@ -12,6 +12,7 @@ export function CodeEditor({
   onRaiseHand = () => {}
 }) {
   const [code, setCode] = useState(initialCode);
+  const [showVisualizer, setShowVisualizer] = useState(false);
   const { isLoading, loadMsg, output, runCode, clearOutput } = usePyodide();
 
   // Update editor content when synced code changes from mentor
@@ -59,6 +60,9 @@ export function CodeEditor({
               <RotateCcw size={14} /> Reset
             </button>
           )}
+          <button className="btn btn-secondary" onClick={() => setShowVisualizer(true)} title="Visualize execution step-by-step">
+            <Eye size={14} /> Visualize
+          </button>
           <button id="btn-run" className="btn btn-primary" onClick={handleRun} disabled={isLoading} title={isLoading ? loadMsg : 'Run code (Ctrl+Enter)'}>
             {isLoading
               ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Loading Python...</>
@@ -112,6 +116,46 @@ export function CodeEditor({
           </>
         )}
       </div>
+
+      {/* Visualizer Modal */}
+      {showVisualizer && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '12px', width: '90%', height: '90%',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '16px 24px', borderBottom: '1px solid #e5e7eb',
+              background: '#f8fafc'
+            }}>
+              <h3 style={{ margin: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Eye size={18} /> Python Execution Visualizer
+              </h3>
+              <button 
+                onClick={() => setShowVisualizer(false)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <iframe 
+              src={`https://pythontutor.com/iframe-embed.html#code=${encodeURIComponent(code)}&codeDivHeight=400&codeDivWidth=350&cumulative=false&curInstr=0&heapPrimitives=nevernest&origin=opt-frontend.js&py=3&rawInputLstJSON=%5B%5D&textReferences=false`}
+              style={{ flex: 1, width: '100%', border: 'none' }}
+              title="Python Visualizer"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
