@@ -38,10 +38,13 @@ export function usePyodide() {
     return () => { cancelled = true; };
   }, []);
 
-  const runCode = async (code) => {
+  const runCode = async (code, injectGlobals = {}) => {
     if (!pyodideRef.current) return { success: false, error: 'Python not ready' };
     setOutput([]);
     try {
+      Object.entries(injectGlobals).forEach(([key, val]) => {
+        pyodideRef.current.globals.set(key, val);
+      });
       await pyodideRef.current.runPythonAsync(code);
       return { success: true };
     } catch (err) {

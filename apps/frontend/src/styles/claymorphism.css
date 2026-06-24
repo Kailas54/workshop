@@ -1,0 +1,84 @@
+/* Claymorphism UI Styles for Code-a-Pet Module */
+
+.clay-container {
+  background: #f0eaff; /* soft pastel base */
+  min-height: 100vh;
+  font-family: 'Poppins', 'Quicksand', 'Baloo 2', sans-serif;
+  color: #4a4a68;
+}
+
+.clay-card {
+  background: #f0eaff;
+  border-radius: 32px;
+  box-shadow: 
+    -8px -8px 16px rgba(255, 255, 255, 0.7),
+     8px  8px 16px rgba(0, 0, 0, 0.15);
+  padding: 32px;
+  transition: all 0.3s ease;
+}
+
+.clay-btn {
+  background: #f0eaff;
+  border: none;
+  border-radius: 24px;
+  box-shadow: 
+    -6px -6px 12px rgba(255, 255, 255, 0.7),
+     6px  6px 12px rgba(0, 0, 0, 0.12);
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6366f1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clay-btn:active {
+  box-shadow: 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+  transform: translateY(2px);
+}
+
+.clay-btn:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: 
+    -4px -4px 8px rgba(255, 255, 255, 0.5),
+     4px  4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.clay-progress-track {
+  background: #f0eaff;
+  border-radius: 100px;
+  height: 24px;
+  box-shadow: 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  position: relative;
+}
+
+.clay-progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clay-text-title {
+  font-weight: 800;
+  color: #6366f1;
+  letter-spacing: -0.02em;
+}
+
+/* Specific gradients for stat bars */
+.fill-hunger { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.fill-energy { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+.fill-happiness { background: linear-gradient(90deg, #f472b6, #ec4899); }
+
+/* SVG Pet Claymorphism effect */
+.clay-svg-filter {
+  filter: drop-shadow(8px 8px 12px rgba(0,0,0,0.15)) drop-shadow(-8px -8px 12px rgba(255,255,255,0.7));
+}

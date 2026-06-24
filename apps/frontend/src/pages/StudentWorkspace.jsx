@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { socket } from '../services/socket';
 import { useStore } from '../services/store';
 import { CodeEditor } from '../components/Editor/CodeEditor';
-import { Target, Trophy, MessageSquare, BookOpen } from 'lucide-react';
+import { Target, Trophy, MessageSquare, BookOpen, Gamepad2, Sword } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function StudentWorkspace() {
@@ -115,6 +115,12 @@ export default function StudentWorkspace() {
             </span>
           ))}
           <span style={{color: 'var(--text-secondary)'}}>Student: {user.name}</span>
+          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #a855f7, #c084fc)', border: 'none', boxShadow: '0 0 10px rgba(168,85,247,0.3)'}} onClick={() => navigate('/code-a-pet')}>
+            <Gamepad2 size={14} /> Code-a-Pet
+          </button>
+          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f77f00, #e63946)', border: 'none', boxShadow: '0 0 10px rgba(247,127,0,0.3)'}} onClick={() => navigate('/code-dungeon')}>
+            <Sword size={14} /> Code Dungeon
+          </button>
           <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => navigate('/materials')}>
             <BookOpen size={14} /> Materials
           </button>
