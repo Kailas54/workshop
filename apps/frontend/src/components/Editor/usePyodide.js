@@ -45,6 +45,8 @@ export function usePyodide() {
       Object.entries(injectGlobals).forEach(([key, val]) => {
         pyodideRef.current.globals.set(key, val);
       });
+      // Automatically download packages (like matplotlib, numpy) if imported
+      await pyodideRef.current.loadPackagesFromImports(code);
       await pyodideRef.current.runPythonAsync(code);
       return { success: true };
     } catch (err) {
