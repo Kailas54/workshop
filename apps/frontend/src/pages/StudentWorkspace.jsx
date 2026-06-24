@@ -118,7 +118,7 @@ export default function StudentWorkspace() {
           <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #a855f7, #c084fc)', border: 'none', boxShadow: '0 0 10px rgba(168,85,247,0.3)'}} onClick={() => navigate('/code-a-pet')}>
             <Gamepad2 size={14} /> Code-a-Pet
           </button>
-          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f77f00, #e63946)', border: 'none', boxShadow: '0 0 10px rgba(247,127,0,0.3)'}} onClick={() => navigate('/code-dungeon')}>
+          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f77f00, #e63946)', border: 'none', boxShadow: '0 0 10px rgba(247,127,0,0.3)'}} onClick={() => window.open('https://codecombat.com/play/level/dungeons-of-kithgard?&fromCampaign=dungeon', '_blank')}>
             <Sword size={14} /> Code Dungeon
           </button>
           <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => navigate('/materials')}>

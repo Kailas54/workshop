@@ -6,7 +6,7 @@ import StudentWorkspace from './pages/StudentWorkspace';
 import AdminDashboard from './pages/AdminDashboard';
 import PlacementMaterials from './pages/PlacementMaterials';
 import CodeAPet from './pages/CodeAPet';
-import CodeDungeon from './pages/CodeDungeon';
+
 import ImpropsHero from './components/ImpropsHero';
 
 // ─── App ──────────────────────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ export default function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/materials" element={<PlacementMaterials />} />
         <Route path="/code-a-pet" element={user?.role === 'student' ? <CodeAPet /> : <Navigate to="/" />} />
-        <Route path="/code-dungeon" element={user?.role === 'student' ? <CodeDungeon /> : <Navigate to="/" />} />
+
       </Routes>
     </BrowserRouter>
   );
