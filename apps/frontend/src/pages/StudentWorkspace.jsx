@@ -15,6 +15,7 @@ export default function StudentWorkspace() {
   const [badges, setBadges] = useState([]);
   const [connected, setConnected] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [gamesEnabled, setGamesEnabled] = useState(false);
   const navigate = useNavigate();
 
   // Use refs so event handlers always read the latest value without re-registering
@@ -59,11 +60,16 @@ export default function StudentWorkspace() {
       }
     };
 
+    const onToggleGames = ({ gamesEnabled }) => {
+      setGamesEnabled(gamesEnabled);
+    };
+
     socket.on('connect', onConnect);
     socket.on('mentor:broadcast', onBroadcast);
     socket.on('mentor:pushCheckpoint', onPushCheckpoint);
     socket.on('mentor:resolveHand', onResolveHand);
     socket.on('mentor:replyHand', onMentorReply);
+    socket.on('mentor:toggleGames', onToggleGames);
 
     if (socket.connected) {
       onConnect();
@@ -77,6 +83,7 @@ export default function StudentWorkspace() {
       socket.off('mentor:pushCheckpoint', onPushCheckpoint);
       socket.off('mentor:resolveHand', onResolveHand);
       socket.off('mentor:replyHand', onMentorReply);
+      socket.off('mentor:toggleGames', onToggleGames);
       setConnected(false);
       socket.disconnect();
     };
@@ -115,12 +122,16 @@ export default function StudentWorkspace() {
             </span>
           ))}
           <span style={{color: 'var(--text-secondary)'}}>Student: {user.name}</span>
-          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #a855f7, #c084fc)', border: 'none', boxShadow: '0 0 10px rgba(168,85,247,0.3)'}} onClick={() => navigate('/code-a-pet')}>
-            <Gamepad2 size={14} /> Code-a-Pet
-          </button>
-          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f77f00, #e63946)', border: 'none', boxShadow: '0 0 10px rgba(247,127,0,0.3)'}} onClick={() => window.open('https://codecombat.com/play/level/dungeons-of-kithgard?&fromCampaign=dungeon', '_blank')}>
-            <Sword size={14} /> Code Dungeon
-          </button>
+          {gamesEnabled && (
+            <>
+              <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #a855f7, #c084fc)', border: 'none', boxShadow: '0 0 10px rgba(168,85,247,0.3)'}} onClick={() => navigate('/code-a-pet')}>
+                <Gamepad2 size={14} /> Code-a-Pet
+              </button>
+              <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f77f00, #e63946)', border: 'none', boxShadow: '0 0 10px rgba(247,127,0,0.3)'}} onClick={() => window.open('https://codecombat.com/play/level/dungeons-of-kithgard?&fromCampaign=dungeon', '_blank')}>
+                <Sword size={14} /> Code Dungeon
+              </button>
+            </>
+          )}
           <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => navigate('/materials')}>
             <BookOpen size={14} /> Materials
           </button>

@@ -66,6 +66,7 @@ export default function MentorDashboard() {
   const [broadcastCode, setBroadcastCode] = useState('# Mentor Broadcast\nprint("Hello, Class!")');
   const [connected, setConnected] = useState(false);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
+  const [gamesEnabled, setGamesEnabled] = useState(false);
 
   useEffect(() => {
     // Connect first, then join the session room only after the connection is confirmed.
@@ -98,11 +99,16 @@ export default function MentorDashboard() {
       });
     };
 
+    const onToggleGames = ({ gamesEnabled }) => {
+      setGamesEnabled(gamesEnabled);
+    };
+
     socket.on('connect', onConnect);
     socket.on('studentJoined', onStudentJoined);
     socket.on('student:statusUpdate', onStatusUpdate);
     socket.on('student:raiseHand', onRaiseHand);
     socket.on('studentLeft', onStudentLeft);
+    socket.on('mentor:toggleGames', onToggleGames);
 
     if (socket.connected) {
       onConnect();
@@ -116,6 +122,7 @@ export default function MentorDashboard() {
       socket.off('student:statusUpdate', onStatusUpdate);
       socket.off('student:raiseHand', onRaiseHand);
       socket.off('studentLeft', onStudentLeft);
+      socket.off('mentor:toggleGames', onToggleGames);
       setConnected(false);
       socket.disconnect();
     };
@@ -190,6 +197,17 @@ export default function MentorDashboard() {
           <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={() => { socket.disconnect(); clearUser(); window.location.href = '/'; }}>Exit</button>
           
           <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px'}}>
+            <button 
+              className={`btn ${gamesEnabled ? 'btn-primary' : 'btn-secondary'}`}
+              style={{padding: '4px 10px', fontSize: '0.75rem', background: gamesEnabled ? 'var(--status-green)' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none'}}
+              onClick={() => {
+                const nextState = !gamesEnabled;
+                setGamesEnabled(nextState);
+                socket.emit('mentor:toggleGames', { gamesEnabled: nextState });
+              }}
+            >
+              {gamesEnabled ? 'Games Enabled' : 'Enable Games'}
+            </button>
             <select 
               className="btn btn-secondary" 
               style={{padding: '4px 8px', fontSize: '0.75rem', maxWidth: '200px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--border-glass)'}}

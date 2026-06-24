@@ -1,3 +1,5 @@
+const sessions = {};
+
 module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log(`[Socket] User connected: ${socket.id}`);
@@ -12,9 +14,14 @@ module.exports = (io) => {
 
       console.log(`[Socket] User ${name} (${role}) joined session ${sessionId}`);
       
+      if (!sessions[sessionId]) {
+        sessions[sessionId] = { gamesEnabled: false };
+      }
+
       // Notify the mentor/room about the new student
       if (role === 'student') {
         io.to(sessionId).emit('studentJoined', { userId, name, socketId: socket.id });
+        socket.emit('mentor:toggleGames', { gamesEnabled: sessions[sessionId].gamesEnabled });
       } else if (role === 'mentor') {
         // If mentor joins, send them all currently connected students
         const sockets = await io.in(sessionId).fetchSockets();
@@ -28,6 +35,15 @@ module.exports = (io) => {
     socket.on('mentor:broadcast', ({ code }) => {
       if (socket.role === 'mentor') {
         socket.to(socket.sessionId).emit('mentor:broadcast', { code });
+      }
+    });
+
+    // Mentor toggling games access
+    socket.on('mentor:toggleGames', ({ gamesEnabled }) => {
+      if (socket.role === 'mentor') {
+        if (!sessions[socket.sessionId]) sessions[socket.sessionId] = {};
+        sessions[socket.sessionId].gamesEnabled = gamesEnabled;
+        io.to(socket.sessionId).emit('mentor:toggleGames', { gamesEnabled });
       }
     });
 
