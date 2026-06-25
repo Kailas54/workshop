@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { socket } from '../services/socket';
 import { useStore } from '../services/store';
 import { CodeEditor } from '../components/Editor/CodeEditor';
+import { logOut } from '../services/auth';
 import { Target, Trophy, MessageSquare, BookOpen, Gamepad2, Sword, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -198,7 +199,7 @@ export default function StudentWorkspace() {
           <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => navigate('/materials')}>
             <BookOpen size={14} /> Materials
           </button>
-          <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={() => { socket.disconnect(); clearUser(); window.location.href = '/'; }}>Exit</button>
+          <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={async () => { socket.disconnect(); await logOut(); clearUser(); window.location.href = '/'; }}>Exit</button>
         </div>
       </header>
       

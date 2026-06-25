@@ -3,6 +3,9 @@ import { socket } from '../services/socket';
 import { useStore } from '../services/store';
 import { CodeEditor } from '../components/Editor/CodeEditor';
 import { CheckCircle2, Circle, Users, HelpCircle, Activity } from 'lucide-react';
+import { db } from '../services/firebase';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { logOut } from '../services/auth';
 
 const QUESTIONS = [
   {
@@ -68,6 +71,19 @@ export default function MentorDashboard() {
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [gamesEnabled, setGamesEnabled] = useState(false);
   const [assessmentMode, setAssessmentMode] = useState(false);
+  const [dbStudents, setDbStudents] = useState({});
+
+  useEffect(() => {
+    const q = query(collection(db, 'users'), where('role', '==', 'student'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const dbData = {};
+      snapshot.forEach((doc) => {
+        dbData[doc.id] = doc.data();
+      });
+      setDbStudents(dbData);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     // Connect first, then join the session room only after the connection is confirmed.
@@ -234,7 +250,7 @@ export default function MentorDashboard() {
             {connected ? 'Live' : 'Connecting...'}
           </span>
           <span style={{color: 'var(--text-secondary)'}}>Mentor: {user.name}</span>
-          <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={() => { socket.disconnect(); clearUser(); window.location.href = '/'; }}>Exit</button>
+          <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={async () => { socket.disconnect(); await logOut(); clearUser(); window.location.href = '/'; }}>Exit</button>
           
           <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px'}}>
             <button 
@@ -279,12 +295,18 @@ export default function MentorDashboard() {
               <Users size={20}/> Student Progress
             </h2>
             <div className="grid-container student-grid">
-              {Object.entries(students).map(([id, s]) => (
+              {Object.entries(students).map(([id, s]) => {
+                const dbInfo = dbStudents[id] || {};
+                const displayName = dbInfo.name || s.name;
+                const displayEmail = dbInfo.email;
+
+                return (
                 <div key={id} className="card glass-panel" style={{
                   borderLeft: `4px solid var(--status-${s.status === 'passed' ? 'green' : s.status === 'attempted_error' ? 'yellow' : 'red'})`
                 }}>
-                  <div style={{fontWeight: 500}}>{s.name}</div>
-                  <div style={{fontSize: '0.875rem', color: 'var(--text-secondary)'}}>
+                  <div style={{fontWeight: 500}}>{displayName}</div>
+                  {displayEmail && <div style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>{displayEmail}</div>}
+                  <div style={{fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '4px'}}>
                     {s.status === 'passed' ? 'Completed Checkpoint' : s.status === 'attempted_error' ? 'Stuck (Has Error)' : 'Not Started'}
                   </div>
                   <div style={{fontSize: '0.75rem', marginTop: '8px', color: 'var(--text-secondary)'}}>
@@ -292,7 +314,7 @@ export default function MentorDashboard() {
                     {(s.focusCounts?.blur > 0) && ` • ${s.focusCounts.blur} tab switches`}
                   </div>
                 </div>
-              ))}
+              )})}
               {Object.keys(students).length === 0 && (
                 <div style={{color: 'var(--text-secondary)'}}>No students joined yet.</div>
               )}

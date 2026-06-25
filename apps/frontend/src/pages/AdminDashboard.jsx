@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../services/store';
 import { Users, BookOpen, BarChart2, Settings, ChevronRight, Activity, TrendingUp, Award } from 'lucide-react';
+import { db } from '../services/firebase';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { logOut } from '../services/auth';
 
 const MOCK_WORKSHOPS = [
   { id: 'ws-1', title: 'Python Bootcamp - Batch 1', mentor: 'Priya Sharma', students: 24, status: 'live' },
   { id: 'ws-2', title: 'Python Bootcamp - Batch 2', mentor: 'Rahul Dev', students: 18, status: 'scheduled' },
   { id: 'ws-3', title: 'Data Structures with Python', mentor: 'Anita Roy', students: 30, status: 'ended' },
-];
-
-const MOCK_STUDENTS = [
-  { id: 's-1', name: 'Aman Kumar', email: 'aman@example.com', batch: 'Batch 1', progress: 'completed' },
-  { id: 's-2', name: 'Sonal Mehta', email: 'sonal@example.com', batch: 'Batch 1', progress: 'in_progress' },
-  { id: 's-3', name: 'Dev Patel', email: 'dev@example.com', batch: 'Batch 2', progress: 'not_started' },
 ];
 
 function StatCard({ icon: Icon, label, value, color }) {
@@ -57,6 +54,18 @@ function WorkshopsTab() {
 }
 
 function StudentsTab() {
+  const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'users'), where('role', '==', 'student'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const studentData = [];
+      snapshot.forEach((doc) => studentData.push({ id: doc.id, ...doc.data() }));
+      setStudents(studentData);
+    });
+    return () => unsubscribe();
+  }, []);
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -74,18 +83,18 @@ function StudentsTab() {
             </tr>
           </thead>
           <tbody>
-            {MOCK_STUDENTS.map((s, idx) => (
+            {students.map((s, idx) => (
               <tr key={s.id} style={{ borderTop: '1px solid var(--border-glass)' }}>
                 <td style={{ padding: '12px 16px', fontWeight: 500 }}>{s.name}</td>
                 <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>{s.email}</td>
-                <td style={{ padding: '12px 16px' }}>{s.batch}</td>
+                <td style={{ padding: '12px 16px' }}>{s.batch || 'Batch 1'}</td>
                 <td style={{ padding: '12px 16px' }}>
                   <span style={{
                     padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600,
                     background: s.progress === 'completed' ? 'rgba(16,185,129,0.15)' : s.progress === 'in_progress' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)',
                     color: s.progress === 'completed' ? 'var(--status-green)' : s.progress === 'in_progress' ? 'var(--status-yellow)' : 'var(--status-red)',
                   }}>
-                    {s.progress.replace('_', ' ').toUpperCase()}
+                    {(s.progress || 'not_started').replace('_', ' ').toUpperCase()}
                   </span>
                 </td>
               </tr>
@@ -135,8 +144,17 @@ const TABS = [
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('workshops');
+  const [totalStudents, setTotalStudents] = useState(0);
   const clearUser = useStore(state => state.clearUser);
   const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || WorkshopsTab;
+
+  useEffect(() => {
+    const q = query(collection(db, 'users'), where('role', '==', 'student'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setTotalStudents(snapshot.size);
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
     <div className="app-container">
@@ -145,7 +163,7 @@ export default function AdminDashboard() {
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <Activity size={16} style={{ color: 'var(--status-green)' }} />
           <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>1 Live Session</span>
-          <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={() => { clearUser(); window.location.href = '/'; }}>Exit</button>
+          <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={async () => { await logOut(); clearUser(); window.location.href = '/'; }}>Exit</button>
         </div>
       </header>
 
@@ -172,7 +190,7 @@ export default function AdminDashboard() {
           {/* Summary Stats */}
           <div className="grid-container" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: '24px' }}>
             <StatCard icon={BookOpen} label="Total Workshops" value={MOCK_WORKSHOPS.length} color="var(--accent-primary)" />
-            <StatCard icon={Users} label="Registered Students" value="72" color="var(--status-green)" />
+            <StatCard icon={Users} label="Registered Students" value={totalStudents} color="var(--status-green)" />
             <StatCard icon={Award} label="Badges Awarded" value="128" color="var(--status-yellow)" />
           </div>
           <ActiveComponent />

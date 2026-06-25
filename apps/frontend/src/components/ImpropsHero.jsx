@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
 import { ArrowRight, Code, Terminal, CheckCircle2, Cpu } from 'lucide-react';
-import { useStore } from '../services/store';
+import { logIn, signUp } from '../services/auth';
 
 export default function ImpropsHero() {
-  const setUser = useStore(state => state.setUser);
   const [showRoles, setShowRoles] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (role) => {
-    setUser({ id: Math.random().toString(36).substr(2, 9), name: `Test ${role.charAt(0).toUpperCase() + role.slice(1)}`, role });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      if (isLogin) {
+        await logIn(email, password);
+      } else {
+        await signUp(email, password, name);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const roles = [
-    { role: 'student', label: '👩‍💻 Join as Student', cls: 'btn-primary', desc: 'Follow along, attempt challenges, earn badges' },
-    { role: 'mentor', label: '🎓 Login as Mentor', cls: 'btn-secondary', desc: 'Broadcast code, push checkpoints, monitor class' },
-    { role: 'admin', label: '⚙️ Login as Admin', cls: 'btn-secondary', desc: 'Manage workshops, view analytics' },
-  ];
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#09090b', color: '#fff', position: 'relative', overflow: 'hidden', fontFamily: 'var(--font-sans)' }}>
@@ -96,20 +108,73 @@ export default function ImpropsHero() {
           </button>
 
           {showRoles && (
-            <div style={{ marginTop: '32px', padding: '24px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(10px)' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '16px', color: '#fff' }}>Demo Mode — select a role to enter</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {roles.map(({ role, label, cls, desc }) => (
-                  <button key={role} onClick={() => handleLogin(role)} style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '12px 16px',
-                    background: role === 'student' ? 'rgba(168,85,247,0.1)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${role === 'student' ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '8px', cursor: 'pointer', color: '#fff', textAlign: 'left', width: '100%'
+            <div style={{
+              position: 'fixed', inset: 0, zIndex: 50,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(9, 9, 11, 0.7)', backdropFilter: 'blur(12px)',
+              padding: '24px'
+            }}>
+              <div style={{
+                width: '100%', maxWidth: '450px',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                padding: '32px',
+                position: 'relative',
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+                overflow: 'hidden'
+              }}>
+                {/* Decorative purple glow inside the modal */}
+                <div style={{
+                  position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px',
+                  background: 'radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%)',
+                  filter: 'blur(30px)', zIndex: 0, borderRadius: '50%'
+                }}></div>
+
+                  <form onSubmit={handleSubmit} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', margin: 0 }}>{isLogin ? 'Welcome Back' : 'Join Improps'}</h3>
+                    <button type="button" onClick={() => setShowRoles(false)} style={{
+                      background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer',
+                      padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: '50%', transition: 'background 0.2s'
+                    }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  
+                  {error && <div style={{ color: '#ef4444', fontSize: '0.875rem', background: 'rgba(239,68,68,0.1)', padding: '8px 12px', borderRadius: '6px' }}>{error}</div>}
+
+                  {!isLogin && (
+                    <input 
+                      type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} required
+                      style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', outline: 'none' }}
+                    />
+                  )}
+                  <input 
+                    type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required
+                    style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', outline: 'none' }}
+                  />
+                  <input 
+                    type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required
+                    style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', outline: 'none' }}
+                  />
+
+                  <button type="submit" disabled={loading} style={{
+                    background: '#a855f7', color: '#fff', border: 'none', padding: '12px', 
+                    borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
+                    marginTop: '8px', opacity: loading ? 0.7 : 1
                   }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '4px' }}>{label}</span>
-                    <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{desc}</span>
+                    {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
                   </button>
-                ))}
+
+                  <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#9ca3af', marginTop: '8px' }}>
+                    {isLogin ? "Don't have an account? " : "Already have an account? "}
+                    <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }} style={{ background: 'none', border: 'none', color: '#a855f7', cursor: 'pointer', fontWeight: 600 }}>
+                      {isLogin ? 'Sign up' : 'Sign in'}
+                    </button>
+                  </p>
+                </form>
               </div>
             </div>
           )}
