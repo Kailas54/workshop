@@ -17,6 +17,7 @@
     "firebase": "^12.15.0",
     "hls.js": "^1.6.16",
     "lucide-react": "^1.21.0",
+    "pdf-lib": "^1.17.1",
     "phaser": "^4.2.0",
     "react-router-dom": "^7.18.0",
     "socket.io-client": "^4.8.3",

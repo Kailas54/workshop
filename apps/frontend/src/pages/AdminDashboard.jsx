@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../services/store';
 import { Users, BookOpen, BarChart2, Settings, ChevronRight, Activity, TrendingUp, Award } from 'lucide-react';
 import { db } from '../services/firebase';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, updateDoc } from 'firebase/firestore';
 import { logOut } from '../services/auth';
 
 const MOCK_WORKSHOPS = [
@@ -80,6 +80,7 @@ function StudentsTab() {
               <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
               <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', fontWeight: 500 }}>Batch</th>
               <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
+              <th style={{ padding: '12px 16px', color: 'var(--text-secondary)', fontWeight: 500 }}>Certificate</th>
             </tr>
           </thead>
           <tbody>
@@ -96,6 +97,18 @@ function StudentsTab() {
                   }}>
                     {(s.progress || 'not_started').replace('_', ' ').toUpperCase()}
                   </span>
+                </td>
+                <td style={{ padding: '12px 16px' }}>
+                  <button 
+                    onClick={() => updateDoc(doc(db, 'users', s.id), { certificateGranted: !s.certificateGranted })}
+                    style={{
+                      padding: '4px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600, border: 'none',
+                      background: s.certificateGranted ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
+                      color: s.certificateGranted ? 'var(--status-red)' : 'var(--status-green)'
+                    }}
+                  >
+                    {s.certificateGranted ? 'Revoke' : 'Grant'}
+                  </button>
                 </td>
               </tr>
             ))}

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useStore } from './services/store';
 import MentorDashboard from './pages/MentorDashboard';
 import StudentWorkspace from './pages/StudentWorkspace';
+import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import PlacementMaterials from './pages/PlacementMaterials';
 import CodeAPet from './pages/CodeAPet';
@@ -37,8 +38,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={!user ? <ImpropsHero /> : <Navigate to={user.role === 'mentor' ? '/mentor' : user.role === 'admin' ? '/admin' : '/workspace'} />} />
+        <Route path="/" element={!user ? <ImpropsHero /> : <Navigate to={user.role === 'mentor' ? '/mentor' : user.role === 'admin' ? '/admin' : '/dashboard'} />} />
         <Route path="/mentor" element={user?.role === 'mentor' ? <MentorDashboard /> : <Navigate to="/" />} />
+        <Route path="/dashboard" element={user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/" />} />
         <Route path="/workspace" element={user?.role === 'student' ? <StudentWorkspace /> : <Navigate to="/" />} />
         <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
         <Route path="/materials" element={<PlacementMaterials />} />

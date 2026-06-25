@@ -3,7 +3,9 @@ import { socket } from '../services/socket';
 import { useStore } from '../services/store';
 import { CodeEditor } from '../components/Editor/CodeEditor';
 import { logOut } from '../services/auth';
-import { Target, Trophy, MessageSquare, BookOpen, Gamepad2, Sword, Info } from 'lucide-react';
+import { db } from '../services/firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { Target, Trophy, MessageSquare, BookOpen, Gamepad2, Sword, Info, ClipboardEdit, Save, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function StudentWorkspace() {
@@ -20,6 +22,13 @@ export default function StudentWorkspace() {
   const [assessmentMode, setAssessmentMode] = useState(false);
   const [showNotice, setShowNotice] = useState(true);
   const [toastWarning, setToastWarning] = useState(null);
+  
+  // Notepad State
+  const [showNotepad, setShowNotepad] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef(null);
+
   const navigate = useNavigate();
 
   // Use refs so event handlers always read the latest value without re-registering
@@ -29,6 +38,20 @@ export default function StudentWorkspace() {
   useEffect(() => { isSyncedRef.current = isSynced; }, [isSynced]);
   useEffect(() => { checkpointRef.current = checkpoint; }, [checkpoint]);
   useEffect(() => { assessmentModeRef.current = assessmentMode; }, [assessmentMode]);
+
+  useEffect(() => {
+    // Fetch user notes on mount
+    const fetchNotes = async () => {
+      try {
+        const docRef = doc(db, 'users', user.id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) setNotes(docSnap.data().notes || '');
+      } catch (err) {
+        console.error("Error fetching notes:", err);
+      }
+    };
+    fetchNotes();
+  }, [user.id]);
 
   useEffect(() => {
     const onConnect = () => {
@@ -171,6 +194,19 @@ export default function StudentWorkspace() {
     });
   };
 
+  const handleNotesChange = (e) => {
+    const newNotes = e.target.value;
+    setNotes(newNotes);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    setIsSaving(true);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const docRef = doc(db, 'users', user.id);
+        await updateDoc(docRef, { notes: newNotes });
+      } catch (err) {} finally { setIsSaving(false); }
+    }, 1000);
+  };
+
   return (
     <div className="app-container">
       <header className="header">
@@ -196,8 +232,11 @@ export default function StudentWorkspace() {
               </button>
             </>
           )}
-          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px'}} onClick={() => navigate('/materials')}>
-            <BookOpen size={14} /> Materials
+          <button className="btn btn-primary" style={{padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)'}} onClick={() => setShowNotepad(true)}>
+            <ClipboardEdit size={14} /> Notes
+          </button>
+          <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={() => navigate('/dashboard')}>
+            Back to Dashboard
           </button>
           <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}} onClick={async () => { socket.disconnect(); await logOut(); clearUser(); window.location.href = '/'; }}>Exit</button>
         </div>
@@ -263,6 +302,33 @@ export default function StudentWorkspace() {
           onRaiseHand={handleRaiseHand}
         />
       </main>
+
+      {/* Floating Notepad Modal */}
+      {showNotepad && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)', padding: '24px' }} onClick={() => setShowNotepad(false)}>
+          <div className="glass-panel" style={{ width: '400px', height: '500px', padding: '20px', display: 'flex', flexDirection: 'column', borderRadius: '12px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ margin: 0, fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ClipboardEdit size={18} /> Quick Notes
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {isSaving ? <><Save size={12} className="pulse-indicator" /> Saving...</> : <><CheckCircle2 size={12} color="var(--status-green)" /> Saved</>}
+                </span>
+                <button style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }} onClick={() => setShowNotepad(false)}>✕</button>
+              </div>
+            </div>
+            <textarea
+              value={notes}
+              onChange={handleNotesChange}
+              placeholder="Jot down concepts or copy-paste code snippets here. They auto-save and will be waiting in your dashboard!"
+              style={{
+                flex: 1, width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '16px', color: '#e5e7eb', fontFamily: 'var(--font-mono)', fontSize: '0.875rem', lineHeight: 1.6, resize: 'none', outline: 'none'
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
