@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { socket } from '../services/socket';
 import { useStore } from '../services/store';
 import { CodeEditor } from '../components/Editor/CodeEditor';
-import { Target, Trophy, MessageSquare, BookOpen, Gamepad2, Sword } from 'lucide-react';
+import { Target, Trophy, MessageSquare, BookOpen, Gamepad2, Sword, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function StudentWorkspace() {
@@ -16,13 +16,18 @@ export default function StudentWorkspace() {
   const [connected, setConnected] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [gamesEnabled, setGamesEnabled] = useState(false);
+  const [assessmentMode, setAssessmentMode] = useState(false);
+  const [showNotice, setShowNotice] = useState(true);
+  const [toastWarning, setToastWarning] = useState(null);
   const navigate = useNavigate();
 
   // Use refs so event handlers always read the latest value without re-registering
   const isSyncedRef = useRef(isSynced);
   const checkpointRef = useRef(checkpoint);
+  const assessmentModeRef = useRef(assessmentMode);
   useEffect(() => { isSyncedRef.current = isSynced; }, [isSynced]);
   useEffect(() => { checkpointRef.current = checkpoint; }, [checkpoint]);
+  useEffect(() => { assessmentModeRef.current = assessmentMode; }, [assessmentMode]);
 
   useEffect(() => {
     const onConnect = () => {
@@ -64,18 +69,68 @@ export default function StudentWorkspace() {
       setGamesEnabled(gamesEnabled);
     };
 
+    const onToggleAssessment = ({ assessmentMode }) => {
+      setAssessmentMode(assessmentMode);
+    };
+
     socket.on('connect', onConnect);
     socket.on('mentor:broadcast', onBroadcast);
     socket.on('mentor:pushCheckpoint', onPushCheckpoint);
     socket.on('mentor:resolveHand', onResolveHand);
     socket.on('mentor:replyHand', onMentorReply);
     socket.on('mentor:toggleGames', onToggleGames);
+    socket.on('mentor:toggleAssessment', onToggleAssessment);
 
     if (socket.connected) {
       onConnect();
     } else {
       socket.connect();
     }
+
+    // Focus tracking and idle detection
+    let idleTimer;
+    let isIdle = false;
+
+    const resetIdleTimer = () => {
+      if (isIdle) {
+        isIdle = false;
+        socket.emit('student:focusUpdate', { eventType: 'active' });
+      }
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        isIdle = true;
+        socket.emit('student:focusUpdate', { eventType: 'idle' });
+      }, 3 * 60 * 1000); // 3 minutes
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        socket.emit('student:focusUpdate', { eventType: 'blur' });
+        if (assessmentModeRef.current) {
+          setToastWarning('Warning: Please stay on this tab during the assessment.');
+          setTimeout(() => setToastWarning(null), 5000);
+        }
+      } else {
+        socket.emit('student:focusUpdate', { eventType: 'focus' });
+        resetIdleTimer();
+      }
+    };
+
+    const handleBlur = () => {
+      socket.emit('student:focusUpdate', { eventType: 'blur' });
+    };
+
+    const handleFocus = () => {
+      socket.emit('student:focusUpdate', { eventType: 'focus' });
+      resetIdleTimer();
+    };
+
+    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach(e => document.addEventListener(e, resetIdleTimer));
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    resetIdleTimer();
 
     return () => {
       socket.off('connect', onConnect);
@@ -84,6 +139,14 @@ export default function StudentWorkspace() {
       socket.off('mentor:resolveHand', onResolveHand);
       socket.off('mentor:replyHand', onMentorReply);
       socket.off('mentor:toggleGames', onToggleGames);
+      socket.off('mentor:toggleAssessment', onToggleAssessment);
+      
+      activityEvents.forEach(e => document.removeEventListener(e, resetIdleTimer));
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+      clearTimeout(idleTimer);
+
       setConnected(false);
       socket.disconnect();
     };
@@ -139,6 +202,22 @@ export default function StudentWorkspace() {
         </div>
       </header>
       
+      {showNotice && (
+        <div style={{ background: 'rgba(59, 130, 246, 0.1)', borderBottom: '1px solid rgba(59, 130, 246, 0.2)', padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Info size={16} style={{ color: '#3b82f6' }} />
+            This session tracks tab focus to help your mentor see who needs help — it's not graded.
+          </div>
+          <button onClick={() => setShowNotice(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}>Dismiss</button>
+        </div>
+      )}
+      
+      {toastWarning && (
+        <div style={{ position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)', background: 'var(--status-red)', color: '#fff', padding: '12px 24px', borderRadius: '8px', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
+          <Info size={18} /> {toastWarning}
+        </div>
+      )}
+
       <main className="main-content">
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="glass-panel" style={{flex: 1, padding: '16px', display: 'flex', flexDirection: 'column'}}>

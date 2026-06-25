@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { socket } from '../services/socket';
 import { useStore } from '../services/store';
 import { CodeEditor } from '../components/Editor/CodeEditor';
-import { CheckCircle2, Circle, Users, HelpCircle } from 'lucide-react';
+import { CheckCircle2, Circle, Users, HelpCircle, Activity } from 'lucide-react';
 
 const QUESTIONS = [
   {
@@ -67,6 +67,7 @@ export default function MentorDashboard() {
   const [connected, setConnected] = useState(false);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [gamesEnabled, setGamesEnabled] = useState(false);
+  const [assessmentMode, setAssessmentMode] = useState(false);
 
   useEffect(() => {
     // Connect first, then join the session room only after the connection is confirmed.
@@ -87,6 +88,37 @@ export default function MentorDashboard() {
       }));
     };
 
+    const onFocusUpdate = ({ userId, eventType }) => {
+      setStudents(prev => {
+        const student = prev[userId];
+        if (!student) return prev;
+        
+        let nextFocusCounts = student.focusCounts || { blur: 0, idle: 0 };
+        let currentFocusState = student.focusState || 'active'; // 'active', 'idle', 'blur'
+
+        if (eventType === 'blur') {
+          if (currentFocusState !== 'blur') {
+            nextFocusCounts = { ...nextFocusCounts, blur: nextFocusCounts.blur + 1 };
+          }
+          currentFocusState = 'blur';
+        } else if (eventType === 'focus') {
+          currentFocusState = 'active';
+        } else if (eventType === 'idle') {
+          if (currentFocusState !== 'idle') {
+            nextFocusCounts = { ...nextFocusCounts, idle: nextFocusCounts.idle + 1 };
+          }
+          currentFocusState = 'idle';
+        } else if (eventType === 'active') {
+          currentFocusState = 'active';
+        }
+
+        return {
+          ...prev,
+          [userId]: { ...student, focusCounts: nextFocusCounts, focusState: currentFocusState }
+        };
+      });
+    };
+
     const onRaiseHand = (data) => {
       setRaisedHands(prev => [...prev, { ...data, message: 'Default feedback message' }]);
     };
@@ -103,12 +135,18 @@ export default function MentorDashboard() {
       setGamesEnabled(gamesEnabled);
     };
 
+    const onToggleAssessment = ({ assessmentMode }) => {
+      setAssessmentMode(assessmentMode);
+    };
+
     socket.on('connect', onConnect);
     socket.on('studentJoined', onStudentJoined);
     socket.on('student:statusUpdate', onStatusUpdate);
+    socket.on('student:focusUpdate', onFocusUpdate);
     socket.on('student:raiseHand', onRaiseHand);
     socket.on('studentLeft', onStudentLeft);
     socket.on('mentor:toggleGames', onToggleGames);
+    socket.on('mentor:toggleAssessment', onToggleAssessment);
 
     if (socket.connected) {
       onConnect();
@@ -120,9 +158,11 @@ export default function MentorDashboard() {
       socket.off('connect', onConnect);
       socket.off('studentJoined', onStudentJoined);
       socket.off('student:statusUpdate', onStatusUpdate);
+      socket.off('student:focusUpdate', onFocusUpdate);
       socket.off('student:raiseHand', onRaiseHand);
       socket.off('studentLeft', onStudentLeft);
       socket.off('mentor:toggleGames', onToggleGames);
+      socket.off('mentor:toggleAssessment', onToggleAssessment);
       setConnected(false);
       socket.disconnect();
     };
@@ -208,6 +248,17 @@ export default function MentorDashboard() {
             >
               {gamesEnabled ? 'Games Enabled' : 'Enable Games'}
             </button>
+            <button 
+              className={`btn ${assessmentMode ? 'btn-primary' : 'btn-secondary'}`}
+              style={{padding: '4px 10px', fontSize: '0.75rem', background: assessmentMode ? 'var(--status-red)' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none'}}
+              onClick={() => {
+                const nextState = !assessmentMode;
+                setAssessmentMode(nextState);
+                socket.emit('mentor:toggleAssessment', { assessmentMode: nextState });
+              }}
+            >
+              {assessmentMode ? 'Assessment Mode ON' : 'Assessment Mode OFF'}
+            </button>
             <select 
               className="btn btn-secondary" 
               style={{padding: '4px 8px', fontSize: '0.75rem', maxWidth: '200px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--border-glass)'}}
@@ -235,6 +286,10 @@ export default function MentorDashboard() {
                   <div style={{fontWeight: 500}}>{s.name}</div>
                   <div style={{fontSize: '0.875rem', color: 'var(--text-secondary)'}}>
                     {s.status === 'passed' ? 'Completed Checkpoint' : s.status === 'attempted_error' ? 'Stuck (Has Error)' : 'Not Started'}
+                  </div>
+                  <div style={{fontSize: '0.75rem', marginTop: '8px', color: 'var(--text-secondary)'}}>
+                    {s.focusState === 'blur' ? '🔴 Switched tabs' : s.focusState === 'idle' ? '🟡 Idle' : '🟢 Active'}
+                    {(s.focusCounts?.blur > 0) && ` • ${s.focusCounts.blur} tab switches`}
                   </div>
                 </div>
               ))}
