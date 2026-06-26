@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { socket } from '../services/socket';
 import { useStore } from '../services/store';
 import { CodeEditor } from '../components/Editor/CodeEditor';
-import { CheckCircle2, Circle, Users, HelpCircle, Activity } from 'lucide-react';
+import { CheckCircle2, Circle, Users, HelpCircle, Activity, GitBranch } from 'lucide-react';
 import { db } from '../services/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { logOut } from '../services/auth';
@@ -72,6 +72,9 @@ export default function MentorDashboard() {
   const [gamesEnabled, setGamesEnabled] = useState(false);
   const [assessmentMode, setAssessmentMode] = useState(false);
   const [dbStudents, setDbStudents] = useState({});
+  const [activeTab, setActiveTab] = useState('code'); // 'code' | 'flowlab'
+  const [flowStudentStatuses, setFlowStudentStatuses] = useState({}); // { userId: { name, levelId, status } }
+  const [selectedFlowLevel, setSelectedFlowLevel] = useState('level-1');
 
   useEffect(() => {
     const q = query(collection(db, 'users'), where('role', '==', 'student'));
@@ -155,6 +158,10 @@ export default function MentorDashboard() {
       setAssessmentMode(assessmentMode);
     };
 
+    const onFlowStatus = ({ userId, name, levelId, status }) => {
+      setFlowStudentStatuses(prev => ({ ...prev, [userId]: { name, levelId, status } }));
+    };
+
     socket.on('connect', onConnect);
     socket.on('studentJoined', onStudentJoined);
     socket.on('student:statusUpdate', onStatusUpdate);
@@ -163,6 +170,7 @@ export default function MentorDashboard() {
     socket.on('studentLeft', onStudentLeft);
     socket.on('mentor:toggleGames', onToggleGames);
     socket.on('mentor:toggleAssessment', onToggleAssessment);
+    socket.on('student:flowStatus', onFlowStatus);
 
     if (socket.connected) {
       onConnect();
@@ -179,6 +187,7 @@ export default function MentorDashboard() {
       socket.off('studentLeft', onStudentLeft);
       socket.off('mentor:toggleGames', onToggleGames);
       socket.off('mentor:toggleAssessment', onToggleAssessment);
+      socket.off('student:flowStatus', onFlowStatus);
       setConnected(false);
       socket.disconnect();
     };
@@ -240,6 +249,22 @@ export default function MentorDashboard() {
     });
   };
 
+  const FLOW_LEVELS = [
+    { id: 'level-1', title: 'Level 1: Your First Automation', description: 'Trigger → Send Email' },
+    { id: 'level-2', title: 'Level 2: Data Flows',           description: 'Webhook → Set Fields → Send Email' },
+    { id: 'level-3', title: 'Level 3: If/Else Branching',    description: 'Trigger → If/Else → Slack/Email' },
+  ];
+
+  const pushFlowWorkflow = () => {
+    const levelDef = FLOW_LEVELS.find(l => l.id === selectedFlowLevel);
+    // Push a minimal starter: just a trigger node, student fills the rest
+    const starterNodes = [
+      { id: 'starter-n1', type: 'flowLabNode', position: { x: 100, y: 200 }, data: { type: 'trigger', label: 'Trigger', config: { mode: 'Manual Click' }, executionState: 'idle', input: null, output: null } },
+    ];
+    socket.emit('mentor:pushFlowWorkflow', { nodes: starterNodes, edges: [], levelId: selectedFlowLevel });
+    alert(`Pushed starter workflow for "${levelDef?.title}" to all students!`);
+  };
+
   return (
     <div className="app-container">
       <header className="header">
@@ -289,6 +314,87 @@ export default function MentorDashboard() {
       </header>
       
       <main className="main-content">
+        {/* Tab switcher */}
+        <div style={{display: 'flex', gap: '0', marginBottom: '0', alignSelf: 'flex-start', flexDirection: 'column', width: '100%'}}>
+          <div style={{display: 'flex', gap: '8px', padding: '0 0 16px 0'}}>
+            <button
+              className={`btn ${activeTab === 'code' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.82rem'}}
+              onClick={() => setActiveTab('code')}
+            >
+              <Activity size={14} /> Code Session
+            </button>
+            <button
+              className={`btn ${activeTab === 'flowlab' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.82rem', background: activeTab === 'flowlab' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : undefined}}
+              onClick={() => setActiveTab('flowlab')}
+            >
+              <GitBranch size={14} /> Flow Lab
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'flowlab' ? (
+          /* ── Flow Lab Tab ────────────────────────────────────────── */
+          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', width: '100%'}}>
+            {/* Push Flow Workflow */}
+            <div className="glass-panel" style={{padding: '20px'}}>
+              <h2 style={{marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <GitBranch size={20} /> Push Flow Lab Workflow
+              </h2>
+              <div style={{display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap'}}>
+                <select
+                  style={{padding: '8px 12px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--border-glass)', borderRadius: '8px', fontSize: '0.85rem', flex: 1, minWidth: '200px'}}
+                  value={selectedFlowLevel}
+                  onChange={e => setSelectedFlowLevel(e.target.value)}
+                >
+                  {FLOW_LEVELS.map(l => (
+                    <option key={l.id} value={l.id} style={{background: '#111'}}>
+                      {l.title} — {l.description}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="btn btn-primary"
+                  style={{background: 'linear-gradient(135deg, #6366f1, #a855f7)', display: 'flex', alignItems: 'center', gap: '6px'}}
+                  onClick={pushFlowWorkflow}
+                  disabled={!connected}
+                >
+                  <GitBranch size={14} /> Push to Students
+                </button>
+              </div>
+              <p style={{fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '12px', marginBottom: 0}}>
+                Pushes a starter Trigger node to student canvases. Students complete the rest to reach the level goal.
+              </p>
+            </div>
+
+            {/* Student Flow Status Grid */}
+            <div className="glass-panel" style={{padding: '16px', flex: 1}}>
+              <h2 style={{marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <Users size={20} /> Student Flow Lab Status
+              </h2>
+              <div className="grid-container student-grid">
+                {Object.entries(students).map(([id, s]) => {
+                  const flowS = flowStudentStatuses[id];
+                  const dbInfo = dbStudents[id] || {};
+                  const displayName = dbInfo.name || s.name;
+                  const statusColor = flowS?.status === 'passed' ? 'var(--status-green)' : flowS?.status === 'failed' ? 'var(--status-red)' : 'var(--status-yellow)';
+                  return (
+                    <div key={id} className="card glass-panel" style={{borderLeft: `4px solid ${statusColor}`}}>
+                      <div style={{fontWeight: 500}}>{displayName}</div>
+                      <div style={{fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px'}}>
+                        {flowS ? `${flowS.levelId} → ${flowS.status}` : 'Not started'}
+                      </div>
+                    </div>
+                  );
+                })}
+                {Object.keys(students).length === 0 && (
+                  <div style={{color: 'var(--text-secondary)'}}>No students joined yet.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
         <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '16px'}}>
           <div className="glass-panel" style={{flex: 1, padding: '16px', display: 'flex', flexDirection: 'column'}}>
             <h2 style={{marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -363,13 +469,14 @@ export default function MentorDashboard() {
               )}
             </div>
           </div>
-        </div>
 
-        <CodeEditor 
-          initialCode={broadcastCode} 
-          onCodeChange={handleBroadcastChange}
-          readOnly={false}
-        />
+          <CodeEditor 
+            initialCode={broadcastCode} 
+            onCodeChange={handleBroadcastChange}
+            readOnly={false}
+          />
+        </div>
+        )}
       </main>
     </div>
   );

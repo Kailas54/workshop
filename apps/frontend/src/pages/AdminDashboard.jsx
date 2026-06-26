@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../services/store';
-import { Users, BookOpen, BarChart2, Settings, ChevronRight, Activity, TrendingUp, Award } from 'lucide-react';
+import { Users, BookOpen, BarChart2, Settings, ChevronRight, Activity, TrendingUp, Award, GitBranch } from 'lucide-react';
 import { db } from '../services/firebase';
-import { collection, onSnapshot, query, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, updateDoc, getDocs } from 'firebase/firestore';
 import { logOut } from '../services/auth';
 
 const MOCK_WORKSHOPS = [
@@ -149,10 +149,145 @@ function AnalyticsTab() {
   );
 }
 
+function FlowLabTab() {
+  const NODE_OVERVIEW = [
+    { key: 'trigger',      label: 'Trigger',        category: 'Logic',         color: '#6366f1' },
+    { key: 'webhook',      label: 'Webhook',        category: 'Logic',         color: '#818cf8' },
+    { key: 'if_else',      label: 'If / Else',      category: 'Logic',         color: '#a855f7' },
+    { key: 'set_fields',   label: 'Set Fields',     category: 'Logic',         color: '#0ea5e9' },
+    { key: 'loop',         label: 'Loop',           category: 'Logic',         color: '#14b8a6' },
+    { key: 'code_node',    label: 'Code Node',      category: 'Logic',         color: '#f97316' },
+    { key: 'send_email',   label: 'Send Email',     category: 'Communication', color: '#ec4899' },
+    { key: 'slack_message',label: 'Slack Message',  category: 'Communication', color: '#4ade80' },
+    { key: 'whatsapp_message', label: 'WhatsApp',   category: 'Communication', color: '#22c55e' },
+    { key: 'instagram_post', label: 'Instagram',    category: 'Social',        color: '#d946ef' },
+    { key: 'google_sheets',label: 'Google Sheets',  category: 'Data',          color: '#34d399' },
+    { key: 'hubspot_crm',  label: 'HubSpot CRM',    category: 'Data',          color: '#ff7a59' },
+    { key: 'stripe_payment', label: 'Stripe',       category: 'Finance',       color: '#6366f1' },
+    { key: 'http_request', label: 'HTTP Request',   category: 'Web / API',     color: '#f59e0b' },
+    { key: 'openai_chat',  label: 'OpenAI (AI)',    category: 'AI',            color: '#10b981' },
+  ];
+
+  const LEVELS_OVERVIEW = [
+    { id: 'level-1', title: 'Level 1: Your First Automation', nodes: 'Trigger → Send Email',                    status: 'active' },
+    { id: 'level-2', title: 'Level 2: Data Flows',           nodes: 'Webhook → Set Fields → Send Email',        status: 'active' },
+    { id: 'level-3', title: 'Level 3: If/Else Branching',    nodes: 'Trigger → If/Else → Slack/Email',          status: 'active' },
+    { id: 'level-4', title: 'Level 4: Loops',                nodes: 'Trigger → Loop → Send Email × N',          status: 'phase-2' },
+    { id: 'level-5', title: 'Level 5: Full Pipeline',        nodes: 'Webhook → CRM → Email → Slack',            status: 'phase-2' },
+  ];
+
+  const [analytics, setAnalytics] = useState({ totalWorkflows: 0, nodeUsage: {} });
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'flowWorkflows'));
+        let total = 0;
+        const nodeUsage = {};
+        snapshot.forEach(docSnap => {
+          total++;
+          const data = docSnap.data();
+          if (data.nodes) {
+            data.nodes.forEach(n => {
+              const type = n.data?.type;
+              if (type) {
+                nodeUsage[type] = (nodeUsage[type] || 0) + 1;
+              }
+            });
+          }
+        });
+        setAnalytics({ totalWorkflows: total, nodeUsage });
+      } catch (err) {
+        console.error('Failed to fetch flow analytics', err);
+      }
+    };
+    fetchAnalytics();
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <GitBranch size={20} color="#6366f1" /> Flow Lab Management
+      </h2>
+
+      {/* Analytics Overview */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+        <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Total Saved Workflows</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 600 }}>{analytics.totalWorkflows}</div>
+        </div>
+        <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Most Popular Node</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 500, color: '#a855f7' }}>
+            {Object.entries(analytics.nodeUsage).sort((a, b) => b[1] - a[1])[0]?.[0] || '—'}
+          </div>
+        </div>
+      </div>
+
+      {/* Node Library */}
+      <div className="glass-panel" style={{ padding: '20px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '1rem' }}>MVP Node Library (Phase 1)</h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+            <thead>
+              <tr style={{ background: 'rgba(255,255,255,0.04)', textAlign: 'left' }}>
+                <th style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontWeight: 500 }}>Node</th>
+                <th style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontWeight: 500 }}>Category</th>
+                <th style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontWeight: 500 }}>Phase</th>
+                <th style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontWeight: 500 }}>Usage Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {NODE_OVERVIEW.map(n => (
+                <tr key={n.key} style={{ borderTop: '1px solid var(--border-glass)' }}>
+                  <td style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: n.color, display: 'inline-block', flexShrink: 0 }} />
+                    {n.label}
+                  </td>
+                  <td style={{ padding: '10px 14px', color: 'var(--text-secondary)' }}>{n.category}</td>
+                  <td style={{ padding: '10px 14px' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', color: 'var(--status-green)' }}>Phase 1</span>
+                  </td>
+                  <td style={{ padding: '10px 14px', color: 'var(--text-secondary)' }}>
+                    {analytics.nodeUsage[n.key] || 0} uses
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Level Content */}
+      <div className="glass-panel" style={{ padding: '20px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '1rem' }}>Curriculum Levels</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {LEVELS_OVERVIEW.map(l => (
+            <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '3px' }}>{l.title}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{l.nodes}</div>
+              </div>
+              <span style={{
+                padding: '3px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 700,
+                background: l.status === 'active' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.06)',
+                color: l.status === 'active' ? 'var(--status-green)' : 'var(--text-secondary)'
+              }}>
+                {l.status === 'active' ? 'Active' : 'Phase 2'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const TABS = [
-  { id: 'workshops', label: 'Workshops', icon: BookOpen, component: WorkshopsTab },
-  { id: 'students', label: 'Students', icon: Users, component: StudentsTab },
-  { id: 'analytics', label: 'Analytics', icon: BarChart2, component: AnalyticsTab },
+  { id: 'workshops', label: 'Workshops', icon: BookOpen,  component: WorkshopsTab  },
+  { id: 'students',  label: 'Students',  icon: Users,     component: StudentsTab   },
+  { id: 'analytics', label: 'Analytics', icon: BarChart2, component: AnalyticsTab  },
+  { id: 'flowlab',   label: 'Flow Lab',  icon: GitBranch, component: FlowLabTab    },
 ];
 
 export default function AdminDashboard() {

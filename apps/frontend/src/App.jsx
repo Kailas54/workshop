@@ -7,6 +7,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import PlacementMaterials from './pages/PlacementMaterials';
 import CodeAPet from './pages/CodeAPet';
+import FlowLab from './pages/FlowLab';
 
 import ImpropsHero from './components/ImpropsHero';
 
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
         <Route path="/materials" element={<PlacementMaterials />} />
         <Route path="/code-a-pet" element={user?.role === 'student' ? <CodeAPet /> : <Navigate to="/" />} />
+        <Route path="/flow-lab" element={user?.role === 'student' ? <FlowLab /> : <Navigate to="/" />} />
 
       </Routes>
     </BrowserRouter>

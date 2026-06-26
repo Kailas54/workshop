@@ -15,7 +15,7 @@ module.exports = (io) => {
       console.log(`[Socket] User ${name} (${role}) joined session ${sessionId}`);
       
       if (!sessions[sessionId]) {
-        sessions[sessionId] = { gamesEnabled: false, assessmentMode: false };
+        sessions[sessionId] = { gamesEnabled: false, assessmentMode: false, flowWorkflow: null };
       }
 
       // Notify the mentor/room about the new student
@@ -23,6 +23,10 @@ module.exports = (io) => {
         io.to(sessionId).emit('studentJoined', { userId, name, socketId: socket.id });
         socket.emit('mentor:toggleGames', { gamesEnabled: sessions[sessionId].gamesEnabled });
         socket.emit('mentor:toggleAssessment', { assessmentMode: sessions[sessionId].assessmentMode });
+        // Replay saved flow workflow for late-joining students
+        if (sessions[sessionId].flowWorkflow) {
+          socket.emit('mentor:pushFlowWorkflow', sessions[sessionId].flowWorkflow);
+        }
       } else if (role === 'mentor') {
         // If mentor joins, send them all currently connected students
         const sockets = await io.in(sessionId).fetchSockets();
@@ -114,6 +118,33 @@ module.exports = (io) => {
     socket.on('mentor:replyHand', ({ userId, code, message }) => {
       if (socket.role === 'mentor') {
         io.to(socket.sessionId).emit('mentor:replyHand', { userId, code, message });
+      }
+    });
+
+    // ─── Flow Lab Events ────────────────────────────────────────────────────
+
+    // Mentor pushes a starter workflow (pre-built nodes + edges) to all students
+    socket.on('mentor:pushFlowWorkflow', ({ nodes, edges, levelId }) => {
+      if (socket.role === 'mentor') {
+        const payload = { nodes, edges, levelId };
+        if (!sessions[socket.sessionId]) sessions[socket.sessionId] = {};
+        sessions[socket.sessionId].flowWorkflow = payload;
+        io.to(socket.sessionId).emit('mentor:pushFlowWorkflow', payload);
+        console.log(`[Flow Lab] Mentor pushed workflow for level ${levelId} to session ${socket.sessionId}`);
+      }
+    });
+
+    // Student reports their Flow Lab run status (passed/failed)
+    socket.on('student:flowStatus', ({ levelId, status, runOutput }) => {
+      if (socket.role === 'student') {
+        io.to(socket.sessionId).emit('student:flowStatus', {
+          userId: socket.userId,
+          name: socket.name,
+          levelId,
+          status, // 'passed' | 'failed' | 'running'
+          runOutput,
+          timestamp: new Date().toISOString(),
+        });
       }
     });
 
