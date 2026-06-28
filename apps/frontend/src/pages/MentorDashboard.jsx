@@ -395,10 +395,11 @@ export default function MentorDashboard() {
             </div>
           </div>
         ) : (
-        <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '16px'}}>
-          <div className="glass-panel" style={{flex: 1, padding: '16px', display: 'flex', flexDirection: 'column'}}>
-            <h2 style={{marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <Users size={20}/> Student Progress
+        <>
+          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '16px'}}>
+            <div className="glass-panel" style={{flex: 1, padding: '16px', display: 'flex', flexDirection: 'column'}}>
+              <h2 style={{marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <Users size={20}/> Student Progress
             </h2>
             <div className="grid-container student-grid">
               {Object.entries(students).map(([id, s]) => {
@@ -468,6 +469,7 @@ export default function MentorDashboard() {
                 <div style={{color: 'var(--text-secondary)'}}>No raised hands.</div>
               )}
             </div>
+            </div>
           </div>
 
           <CodeEditor 
@@ -475,7 +477,7 @@ export default function MentorDashboard() {
             onCodeChange={handleBroadcastChange}
             readOnly={false}
           />
-        </div>
+        </>
         )}
       </main>
     </div>
