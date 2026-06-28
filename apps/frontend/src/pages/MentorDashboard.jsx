@@ -313,7 +313,7 @@ export default function MentorDashboard() {
         </div>
       </header>
       
-      <main className="main-content">
+      <main className="main-content" style={{ flexDirection: 'column' }}>
         {/* Tab switcher */}
         <div style={{display: 'flex', gap: '0', marginBottom: '0', alignSelf: 'flex-start', flexDirection: 'column', width: '100%'}}>
           <div style={{display: 'flex', gap: '8px', padding: '0 0 16px 0'}}>
@@ -334,6 +334,7 @@ export default function MentorDashboard() {
           </div>
         </div>
 
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'row', gap: '16px', overflow: 'hidden', width: '100%' }}>
         {activeTab === 'flowlab' ? (
           /* ── Flow Lab Tab ────────────────────────────────────────── */
           <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', width: '100%'}}>
@@ -479,6 +480,7 @@ export default function MentorDashboard() {
           />
         </>
         )}
+        </div>
       </main>
     </div>
   );
