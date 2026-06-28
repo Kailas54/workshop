@@ -8,6 +8,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import PlacementMaterials from './pages/PlacementMaterials';
 import CodeAPet from './pages/CodeAPet';
 import FlowLab from './pages/FlowLab';
+import ProjectsDashboard from './pages/ProjectsDashboard';
+import ProjectWorkspace from './pages/Projects/ProjectWorkspace';
 
 import ImpropsHero from './components/ImpropsHero';
 
@@ -47,6 +49,8 @@ export default function App() {
         <Route path="/materials" element={<PlacementMaterials />} />
         <Route path="/code-a-pet" element={user?.role === 'student' ? <CodeAPet /> : <Navigate to="/" />} />
         <Route path="/flow-lab" element={user?.role === 'student' ? <FlowLab /> : <Navigate to="/" />} />
+        <Route path="/projects" element={user?.role === 'student' ? <ProjectsDashboard /> : <Navigate to="/" />} />
+        <Route path="/projects/:projectId" element={user?.role === 'student' ? <ProjectWorkspace /> : <Navigate to="/" />} />
 
       </Routes>
     </BrowserRouter>

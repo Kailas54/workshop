@@ -47,8 +47,19 @@ export function usePyodide() {
       });
       // Automatically download packages (like matplotlib, numpy) if imported
       await pyodideRef.current.loadPackagesFromImports(code);
-      await pyodideRef.current.runPythonAsync(code);
-      return { success: true };
+      const result = await pyodideRef.current.runPythonAsync(code);
+      
+      // Convert Pyodide proxies to native JS objects
+      let jsResult = result;
+      if (result && typeof result.toJs === 'function') {
+        try {
+          jsResult = result.toJs({ dict_converter: Object.fromEntries });
+        } catch (e) {
+          jsResult = result.toJs();
+        }
+      }
+      
+      return { success: true, result: jsResult };
     } catch (err) {
       setOutput((prev) => [...prev, { type: 'stderr', text: err.message }]);
       return { success: false, error: err.message };

@@ -244,6 +244,41 @@ export default function StudentDashboard() {
               ))}
             </div>
           </div>
+
+          {/* Real-World Projects Section */}
+          <div className="glass-panel" style={{ padding: '24px', borderRadius: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Target size={20} color="#a855f7" /> Real-World Projects
+              </h2>
+              <button 
+                className="btn btn-secondary" 
+                style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                onClick={() => navigate('/projects')}
+              >
+                View All
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              <div 
+                style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'all 0.2s' }}
+                onClick={() => navigate('/projects/quickbill')}
+                className="card"
+              >
+                <div style={{ fontWeight: 600, color: '#f8fafc', marginBottom: '4px' }}>QuickBill (Café)</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Billing System</div>
+              </div>
+              <div 
+                style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'all 0.2s' }}
+                onClick={() => navigate('/projects/simbank')}
+                className="card"
+              >
+                <div style={{ fontWeight: 600, color: '#f8fafc', marginBottom: '4px' }}>SimBank</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>ATM Simulator</div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Right Column - Notepad */}
