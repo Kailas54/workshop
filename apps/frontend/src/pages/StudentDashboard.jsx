@@ -182,7 +182,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
             <button className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => navigate('/materials')}>
               <div style={{ background: 'rgba(59,130,246,0.1)', padding: '12px', borderRadius: '50%' }}><BookOpen size={24} color="#3b82f6" /></div>
               <span style={{ fontWeight: 600 }}>Study Materials</span>
@@ -218,6 +218,15 @@ export default function StudentDashboard() {
               <div style={{ background: 'rgba(99,102,241,0.15)', padding: '12px', borderRadius: '50%' }}><GitBranch size={24} color="#6366f1" /></div>
               <span style={{ fontWeight: 600 }}>Flow Lab</span>
               <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: '#fff', fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.05em', padding: '2px 6px', borderRadius: '8px' }}>NEW</span>
+            </button>
+            <button
+              className="glass-panel"
+              style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(168,85,247,0.05)', border: '1px solid rgba(168,85,247,0.25)', cursor: 'pointer', transition: 'all 0.2s', position: 'relative' }}
+              onClick={() => navigate('/projects')}
+            >
+              <div style={{ background: 'rgba(168,85,247,0.15)', padding: '12px', borderRadius: '50%' }}><Target size={24} color="#a855f7" /></div>
+              <span style={{ fontWeight: 600 }}>Projects</span>
+              <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'linear-gradient(135deg, #a855f7, #ec4899)', color: '#fff', fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.05em', padding: '2px 6px', borderRadius: '8px' }}>NEW</span>
             </button>
           </div>
 
