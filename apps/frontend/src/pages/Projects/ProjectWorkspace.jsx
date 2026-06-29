@@ -173,7 +173,7 @@ json.dumps(_result)
       // 3. Run the code
       const res = await runCode(fullCode);
       if (!res.success) {
-        setErrorMsg(res.error);
+        setErrorMsg(res.error + "\n\n--- DEBUG FULL CODE ---\n" + fullCode);
         return { success: false, error: res.error };
       }
       
