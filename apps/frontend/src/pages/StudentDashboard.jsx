@@ -4,7 +4,7 @@ import { useStore } from '../services/store';
 import { logOut } from '../services/auth';
 import { db } from '../services/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { BookOpen, Award, Share2, Terminal, Trophy, Target, Play, Save, Star, Zap, CheckCircle2, Lock, GitBranch } from 'lucide-react';
+import { BookOpen, Award, Share2, Terminal, Trophy, Target, Play, Save, Star, Zap, CheckCircle2, Lock, GitBranch, Search, Mail } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import GradientCards from '../components/GradientCards';
 
@@ -139,181 +139,305 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="app-container" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', gap: '24px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+    <div className="app-container" style={{ 
+      padding: '32px', maxWidth: '100%', margin: 0, gap: '32px', display: 'flex', flexDirection: 'column', overflowY: 'auto',
+      background: '#1d1d25', fontFamily: "'Quicksand', sans-serif", color: '#e2e8f0', minHeight: '100vh'
+    }}>
       
       {/* Header */}
-      <header className="glass-panel" style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: '16px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            Welcome back, <span style={{ color: '#a855f7' }}>{user.name}</span>!
+          <h1 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 700, color: '#ffffff' }}>
+            Hello, <span style={{ fontFamily: "'Dancing Script', cursive", background: 'linear-gradient(135deg, #a855f7, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '3rem', paddingLeft: '8px' }}>{user.name}</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Ready to crush some code today?</p>
+          <p style={{ color: '#a0a0ab', margin: '4px 0 0 0', fontSize: '1rem', fontWeight: 500 }}>Welcome back!</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="btn btn-secondary" onClick={async () => { await logOut(); clearUser(); window.location.href = '/'; }}>Log Out</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', background: '#252530', borderRadius: '12px', padding: '10px 16px', gap: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Search size={16} color="#a0a0ab" />
+            <input type="text" placeholder="Search" style={{ background: 'transparent', border: 'none', color: '#e2e8f0', outline: 'none', width: '100px', fontSize: '0.85rem' }} />
+          </div>
+          <div style={{ background: '#252530', borderRadius: '12px', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
+            <Mail size={18} color="#a0a0ab" />
+          </div>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #a855f7, #ec4899)', overflow: 'hidden', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} onClick={async () => { await logOut(); clearUser(); window.location.href = '/'; }}>
+            <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.name}`} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
         </div>
       </header>
 
       {/* Main Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', alignItems: 'start' }}>
         
         {/* Left Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Progress & Points */}
-          <div className="glass-panel" style={{ padding: '24px', borderRadius: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Target size={20} color="#a855f7" /> Your Journey
+          {/* Main Banner / Your Journey */}
+          <div style={{ 
+            background: 'linear-gradient(135deg, #2a2a35 0%, #1e1e27 100%)', 
+            borderRadius: '24px', 
+            padding: '32px', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            border: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.05)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <h2 style={{ margin: '0 0 16px 0', fontSize: '1.75rem', fontWeight: 700, color: '#fff', maxWidth: '300px', lineHeight: 1.2 }}>
+                Continue your<br/>Learning Journey
               </h2>
-              <div style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', padding: '6px 16px', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--status-yellow)', fontWeight: 600 }}>
-                <Trophy size={16} /> {points} XP
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ background: '#e2e8f0', color: '#0f172a', padding: '8px 16px', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                  <Trophy size={16} /> {points} XP
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: '#fff', padding: '8px 16px', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                  <CheckCircle2 size={16} color="#d8b4fe" /> {progress}% Complete
+                </div>
               </div>
             </div>
             
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500 }}>
-                <span>Course Progress</span>
-                <span style={{ color: '#a855f7' }}>{progress}%</span>
-              </div>
-              <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
-                <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #a855f7, #c084fc)', borderRadius: '6px', transition: 'width 1s ease' }}></div>
-              </div>
+            {/* Abstract 3D shape illustration representation */}
+            <div style={{ position: 'relative', width: '150px', height: '120px', zIndex: 0 }}>
+              <div style={{ position: 'absolute', right: '10px', top: '-10px', width: '100px', height: '100px', background: 'linear-gradient(135deg, #a855f7, #ec4899)', borderRadius: '50%', filter: 'blur(2px)', opacity: 0.8, boxShadow: 'inset -10px -10px 20px rgba(0,0,0,0.4)' }}></div>
+              <div style={{ position: 'absolute', right: '50px', top: '30px', width: '60px', height: '60px', background: 'linear-gradient(135deg, #38bdf8, #818cf8)', borderRadius: '50%', filter: 'blur(1px)', opacity: 0.9, boxShadow: 'inset -5px -5px 10px rgba(0,0,0,0.4)' }}></div>
+              <div style={{ position: 'absolute', right: '30px', top: '80px', width: '140px', height: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '50%', filter: 'blur(4px)' }}></div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
-            <button className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => navigate('/materials')}>
-              <div style={{ background: 'rgba(59,130,246,0.1)', padding: '12px', borderRadius: '50%' }}><BookOpen size={24} color="#3b82f6" /></div>
-              <span style={{ fontWeight: 600 }}>Study Materials</span>
+          {/* Premium Purple 3D Dock / Quick Actions */}
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap');
+            
+            /* Custom Purple Scrollbar */
+            ::-webkit-scrollbar {
+              width: 8px;
+            }
+            ::-webkit-scrollbar-track {
+              background: #1d1d25; 
+            }
+            ::-webkit-scrollbar-thumb {
+              background: linear-gradient(180deg, #a855f7, #6b21a8);
+              border-radius: 8px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+              background: linear-gradient(180deg, #c084fc, #7e22ce);
+            }
+
+            .dock-grid {
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              gap: 16px;
+            }
+            
+            .dock-card {
+              position: relative;
+              aspect-ratio: 3 / 4;
+              border-radius: 20px;
+              background: linear-gradient(160deg, #6b21a8, #3b0764);
+              box-shadow: 
+                0 15px 30px rgba(0,0,0,0.3),
+                inset 0 3px 6px rgba(216, 180, 254, 0.3),
+                inset 0 -20px 40px rgba(0,0,0,0.6);
+              border: 1px solid rgba(216, 180, 254, 0.15);
+              padding: 16px;
+              display: flex;
+              flex-direction: column;
+              text-align: left;
+              cursor: pointer;
+              transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+              font-family: 'Quicksand', sans-serif;
+              overflow: hidden;
+            }
+            
+            .dock-card:hover:not(.disabled) {
+              transform: translateY(-8px);
+              box-shadow: 
+                0 25px 40px rgba(0,0,0,0.4),
+                inset 0 3px 6px rgba(216, 180, 254, 0.4),
+                inset 0 -20px 40px rgba(0,0,0,0.7);
+            }
+            
+            .dock-card.disabled {
+              cursor: not-allowed;
+              opacity: 0.7;
+              background: linear-gradient(160deg, #4c1d95, #1e1b4b);
+            }
+            
+            .dock-card::after {
+              content: '';
+              position: absolute;
+              top: 0; left: 0; right: 0; bottom: 0;
+              background: radial-gradient(circle at 100% 0%, rgba(216, 180, 254, 0.15) 0%, transparent 50%);
+              pointer-events: none;
+            }
+
+            .dock-label {
+              font-size: 0.55rem;
+              font-weight: 700;
+              letter-spacing: 0.15em;
+              color: rgba(216, 180, 254, 0.7);
+              text-transform: uppercase;
+              margin-bottom: 8px;
+            }
+
+            .dock-title {
+              font-size: 1.1rem;
+              font-weight: 700;
+              color: #ffffff;
+              line-height: 1.1;
+              letter-spacing: -0.02em;
+            }
+
+            .dock-footer {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-top: auto;
+            }
+
+            .dock-orb {
+              width: 28px;
+              height: 28px;
+              border-radius: 50%;
+              background: radial-gradient(circle at 30% 30%, #f3e8ff, #a855f7);
+              box-shadow: 
+                inset -3px -3px 6px rgba(0,0,0,0.4),
+                0 4px 8px rgba(0,0,0,0.3);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            
+            .dock-orb svg {
+              width: 14px;
+              height: 14px;
+              color: #3b0764;
+            }
+
+            .dock-arrow {
+              color: rgba(216, 180, 254, 0.6);
+              transition: transform 0.2s, color 0.2s;
+            }
+            
+            .dock-card:hover:not(.disabled) .dock-arrow {
+              transform: translateX(3px);
+              color: rgba(216, 180, 254, 1);
+            }
+            
+            .dock-badge {
+              position: absolute;
+              top: 12px;
+              right: 12px;
+              background: #ec4899;
+              color: #fff;
+              font-size: 0.55rem;
+              font-weight: 800;
+              letter-spacing: 0.05em;
+              padding: 2px 6px;
+              border-radius: 12px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+          `}</style>
+          
+          <div className="dock-grid">
+            <button className="dock-card" onClick={() => navigate('/materials')}>
+              <div className="dock-label">RESOURCE</div>
+              <div className="dock-title">Study<br/>Materials</div>
+              <div className="dock-footer">
+                <div className="dock-orb"><BookOpen /></div>
+                <div className="dock-arrow">→</div>
+              </div>
             </button>
+            
             <button 
-              className="glass-panel" 
-              style={{ 
-                padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', 
-                background: certificateGranted ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.02)', 
-                border: certificateGranted ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(255,255,255,0.1)', 
-                cursor: certificateGranted ? 'pointer' : 'not-allowed', 
-                transition: 'all 0.2s',
-                opacity: certificateGranted ? 1 : 0.6
-              }} 
+              className={`dock-card ${!certificateGranted ? 'disabled' : ''}`}
               onClick={() => certificateGranted && setShowCertificate(true)}
               title={certificateGranted ? 'View Certificate' : 'Complete the workshop to unlock'}
             >
-              <div style={{ background: certificateGranted ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '50%' }}>
-                {certificateGranted ? <Award size={24} color="#10b981" /> : <Lock size={24} color="var(--text-secondary)" />}
+              <div className="dock-label">ACHIEVEMENT</div>
+              <div className="dock-title">{certificateGranted ? 'View' : 'Locked'}<br/>Certificate</div>
+              <div className="dock-footer">
+                <div className="dock-orb" style={{ background: certificateGranted ? 'radial-gradient(circle at 30% 30%, #d1fae5, #10b981)' : 'radial-gradient(circle at 30% 30%, #9ca3af, #4b5563)' }}>
+                  {certificateGranted ? <Award /> : <Lock />}
+                </div>
+                <div className="dock-arrow">→</div>
               </div>
-              <span style={{ fontWeight: 600 }}>{certificateGranted ? 'View Certificate' : 'Locked'}</span>
             </button>
-            <button className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(14,118,168,0.05)', border: '1px solid rgba(14,118,168,0.2)', cursor: 'pointer', transition: 'all 0.2s' }} onClick={handleLinkedInShare}>
-              <div style={{ background: 'rgba(14,118,168,0.1)', padding: '12px', borderRadius: '50%' }}><Share2 size={24} color="#0e76a8" /></div>
-              <span style={{ fontWeight: 600 }}>Share Progress</span>
+            
+            <button className="dock-card" onClick={handleLinkedInShare}>
+              <div className="dock-label">SOCIAL</div>
+              <div className="dock-title">Share<br/>Progress</div>
+              <div className="dock-footer">
+                <div className="dock-orb" style={{ background: 'radial-gradient(circle at 30% 30%, #bae6fd, #0284c7)' }}>
+                  <Share2 />
+                </div>
+                <div className="dock-arrow">→</div>
+              </div>
             </button>
-            <button
-              className="glass-panel"
-              id="flow-lab-card"
-              style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer', transition: 'all 0.2s', position: 'relative' }}
-              onClick={() => navigate('/flow-lab')}
-            >
-              <div style={{ background: 'rgba(99,102,241,0.15)', padding: '12px', borderRadius: '50%' }}><GitBranch size={24} color="#6366f1" /></div>
-              <span style={{ fontWeight: 600 }}>Flow Lab</span>
-              <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: '#fff', fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.05em', padding: '2px 6px', borderRadius: '8px' }}>NEW</span>
+            
+            <button className="dock-card" onClick={() => navigate('/flow-lab')}>
+              <div className="dock-badge">NEW</div>
+              <div className="dock-label">PRACTICE</div>
+              <div className="dock-title">Flow<br/>Lab</div>
+              <div className="dock-footer">
+                <div className="dock-orb" style={{ background: 'radial-gradient(circle at 30% 30%, #e0e7ff, #4f46e5)' }}>
+                  <GitBranch />
+                </div>
+                <div className="dock-arrow">→</div>
+              </div>
             </button>
-            <button
-              className="glass-panel"
-              style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(168,85,247,0.05)', border: '1px solid rgba(168,85,247,0.25)', cursor: 'pointer', transition: 'all 0.2s', position: 'relative' }}
-              onClick={() => navigate('/projects')}
-            >
-              <div style={{ background: 'rgba(168,85,247,0.15)', padding: '12px', borderRadius: '50%' }}><Target size={24} color="#a855f7" /></div>
-              <span style={{ fontWeight: 600 }}>Projects</span>
-              <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'linear-gradient(135deg, #a855f7, #ec4899)', color: '#fff', fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.05em', padding: '2px 6px', borderRadius: '8px' }}>NEW</span>
+            
+            <button className="dock-card" onClick={() => navigate('/projects')}>
+              <div className="dock-badge">NEW</div>
+              <div className="dock-label">APPLICATION</div>
+              <div className="dock-title">Code<br/>Projects</div>
+              <div className="dock-footer">
+                <div className="dock-orb" style={{ background: 'radial-gradient(circle at 30% 30%, #fce7f3, #db2777)' }}>
+                  <Target />
+                </div>
+                <div className="dock-arrow">→</div>
+              </div>
             </button>
           </div>
           
-          {/* Featured Learning Paths / Gradient Cards */}
-          <div style={{ marginTop: '8px' }}>
-            <h2 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Star size={20} color="#f59e0b" /> Recommended Modules
-            </h2>
-            <GradientCards />
-          </div>
-
           {/* Upcoming Workshops */}
-          <div className="glass-panel" style={{ padding: '24px', borderRadius: '16px' }}>
-            <h2 style={{ margin: '0 0 20px 0', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ marginTop: '8px' }}>
+            <h2 style={{ margin: '0 0 16px 0', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Terminal size={20} color="#3b82f6" /> Upcoming Workshops
             </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {WORKSHOPS.map(ws => (
-                <div key={ws.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '4px' }}>{ws.title}</div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{ws.date}</div>
-                  </div>
-                  {ws.status === 'live' ? (
-                    <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--status-green)', color: '#000', fontWeight: 700 }} onClick={() => navigate('/workspace')}>
-                      <Play size={14} /> Join Live
-                    </button>
-                  ) : (
-                    <span style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Scheduled</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Real-World Projects Section */}
-          <div className="glass-panel" style={{ padding: '24px', borderRadius: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Target size={20} color="#a855f7" /> Real-World Projects
-              </h2>
-              <button 
-                className="btn btn-secondary" 
-                style={{ fontSize: '0.8rem', padding: '6px 12px' }}
-                onClick={() => navigate('/projects')}
-              >
-                View All
-              </button>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-              <div 
-                style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'all 0.2s' }}
-                onClick={() => navigate('/projects/quickbill')}
-                className="card"
-              >
-                <div style={{ fontWeight: 600, color: '#f8fafc', marginBottom: '4px' }}>QuickBill (Café)</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Billing System</div>
-              </div>
-              <div 
-                style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'all 0.2s' }}
-                onClick={() => navigate('/projects/simbank')}
-                className="card"
-              >
-                <div style={{ fontWeight: 600, color: '#f8fafc', marginBottom: '4px' }}>SimBank</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>ATM Simulator</div>
-              </div>
-            </div>
+            <GradientCards workshops={WORKSHOPS} />
           </div>
 
         </div>
 
-        {/* Right Column - Notepad */}
-        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', height: '100%', minHeight: '500px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Right Column - Notepad (Reports style) */}
+        <div style={{ 
+          background: 'linear-gradient(145deg, #262631 0%, #1c1c24 100%)', 
+          borderRadius: '24px', 
+          padding: '24px', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          height: '100%', 
+          minHeight: '600px',
+          border: '1px solid rgba(255,255,255,0.05)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#e2e8f0' }}>
               Personal Notes
             </h2>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              {isSaving ? <><Save size={12} className="pulse-indicator" /> Saving...</> : <><CheckCircle2 size={12} color="var(--status-green)" /> Saved</>}
-            </span>
+            <div style={{ background: '#252530', borderRadius: '8px', padding: '6px 12px', fontSize: '0.75rem', color: '#a0a0ab', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              {isSaving ? <><Save size={12} className="pulse-indicator" /> Saving...</> : <><CheckCircle2 size={12} color="#10b981" /> Saved</>}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-            <button title="Insert Star" onClick={() => insertIcon('⭐')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '6px', cursor: 'pointer', color: '#fff' }}><Star size={16}/></button>
-            <button title="Insert Target" onClick={() => insertIcon('🎯')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '6px', cursor: 'pointer', color: '#fff' }}><Target size={16}/></button>
-            <button title="Insert Zap" onClick={() => insertIcon('⚡')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '6px', cursor: 'pointer', color: '#fff' }}><Zap size={16}/></button>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <button title="Insert Star" onClick={() => insertIcon('⭐')} style={{ background: '#252530', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: '#a0a0ab', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#2d2d3a'} onMouseOut={e => e.currentTarget.style.background = '#252530'}><Star size={14}/></button>
+            <button title="Insert Target" onClick={() => insertIcon('🎯')} style={{ background: '#252530', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: '#a0a0ab', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#2d2d3a'} onMouseOut={e => e.currentTarget.style.background = '#252530'}><Target size={14}/></button>
+            <button title="Insert Zap" onClick={() => insertIcon('⚡')} style={{ background: '#252530', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: '#a0a0ab', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#2d2d3a'} onMouseOut={e => e.currentTarget.style.background = '#252530'}><Zap size={14}/></button>
           </div>
 
           <textarea
@@ -324,20 +448,22 @@ export default function StudentDashboard() {
             style={{
               flex: 1,
               width: '100%',
-              background: 'rgba(0,0,0,0.3)',
+              background: '#1d1d25',
               border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '8px',
-              padding: '16px',
-              color: '#e5e7eb',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.875rem',
-              lineHeight: 1.6,
+              borderRadius: '16px',
+              padding: '20px',
+              color: '#e2e8f0',
+              fontFamily: "'Quicksand', sans-serif",
+              fontSize: '1rem',
+              fontWeight: 500,
+              lineHeight: 1.5,
               resize: 'none',
               outline: 'none',
-              boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)'
+              boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.2)'
             }}
           />
         </div>
+
       </div>
 
       {showCertificate && (

@@ -1,15 +1,15 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Play, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const GradientCards = () => {
-  const cards = [
+const GradientCards = ({ workshops = [] }) => {
+  const navigate = useNavigate();
+
+  // Define themes to cycle through
+  const themes = [
     {
-      id: 1,
       theme: 'orange',
-      label: 'BASICS',
       labelColor: '#e87c48',
-      title: 'Python Fundamentals',
-      desc: 'Master the core concepts of Python programming, from variables to control structures.',
       bgGradient: 'linear-gradient(135deg, #fef6ed 0%, #fbe3cf 100%)',
       svgShapes: (
         <>
@@ -22,12 +22,8 @@ const GradientCards = () => {
       )
     },
     {
-      id: 2,
       theme: 'purple',
-      label: 'INTERMEDIATE',
       labelColor: '#9353d3',
-      title: 'Data Structures',
-      desc: 'Learn how to organize and manipulate data efficiently using lists, dicts, and sets.',
       bgGradient: 'linear-gradient(135deg, #f2eff9 0%, #e3dcf4 100%)',
       svgShapes: (
         <>
@@ -35,73 +31,48 @@ const GradientCards = () => {
           <div className="bg-shape rect-purple-1"></div>
         </>
       )
-    },
-    {
-      id: 3,
-      theme: 'green',
-      label: 'ADVANCED',
-      labelColor: '#45b85a',
-      title: 'Object Oriented',
-      desc: 'Dive into classes, inheritance, and advanced patterns in modern Python.',
-      bgGradient: 'linear-gradient(135deg, #eefbe9 0%, #d8f2d5 100%)',
-      svgShapes: (
-        <>
-          <div className="bg-shape circle-green-1"></div>
-          <div className="bg-shape tree-group">
-            <div className="tree-top"></div>
-            <div className="tree-mid"></div>
-            <div className="tree-bottom"></div>
-            <div className="tree-trunk"></div>
-          </div>
-        </>
-      )
-    },
-    {
-      id: 4,
-      theme: 'pink',
-      label: 'MASTERY',
-      labelColor: '#d64ba6',
-      title: 'Real-world Apps',
-      desc: 'Build complete applications using frameworks, databases, and APIs.',
-      bgGradient: 'linear-gradient(135deg, #fef1fb 0%, #f9d3f1 100%)',
-      svgShapes: (
-        <>
-          <div className="bg-shape circle-pink-1"></div>
-          <svg className="bg-shape star-pink-1" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M50 0 C60 40, 90 60, 100 100 C60 90, 40 90, 0 100 C10 60, 40 40, 50 0 Z" fill="url(#pinkStarGrad)"/>
-            <defs>
-              <linearGradient id="pinkStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f3a8e6" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#df6bc5" stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </>
-      )
     }
   ];
 
   return (
     <div className="gradient-cards-container">
-      {cards.map((card) => (
-        <div key={card.id} className={`g-card g-card-${card.theme}`} style={{ background: card.bgGradient }}>
-          {/* Background Shapes */}
-          <div className="g-card-bg">
-            {card.svgShapes}
-          </div>
-          
-          {/* Content */}
-          <div className="g-card-content">
-            <div className="g-card-label" style={{ color: card.labelColor }}>{card.label}</div>
-            <h3 className="g-card-title">{card.title}</h3>
-            <p className="g-card-desc">{card.desc}</p>
+      {workshops.map((ws, index) => {
+        const themeDef = themes[index % themes.length];
+        return (
+          <div key={ws.id} className={`g-card g-card-${themeDef.theme}`} style={{ background: themeDef.bgGradient }}>
+            {/* Background Shapes */}
+            <div className="g-card-bg">
+              {themeDef.svgShapes}
+            </div>
             
-            <a href="#" className="g-card-link" onClick={(e) => e.preventDefault()}>
-              Learn more <ArrowRight size={16} strokeWidth={2.5} />
-            </a>
+            {/* Content */}
+            <div className="g-card-content">
+              <div className="g-card-label" style={{ color: themeDef.labelColor, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Calendar size={12} /> {ws.date.toUpperCase()}
+              </div>
+              <h3 className="g-card-title">{ws.title}</h3>
+              <p className="g-card-desc">Master the upcoming concepts in this interactive live session.</p>
+              
+              <div style={{ marginTop: 'auto', zIndex: 2 }}>
+                {ws.status === 'live' ? (
+                  <button 
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#111827', color: '#fff', padding: '10px 20px', borderRadius: '12px', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'transform 0.2s' }}
+                    onClick={() => navigate('/workspace')}
+                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    <Play size={16} fill="currentColor" /> Join Live
+                  </button>
+                ) : (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'rgba(255,255,255,0.5)', color: '#4b5563', borderRadius: '12px', fontWeight: 600, fontSize: '0.85rem' }}>
+                    Scheduled
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <style>{`
         .gradient-cards-container {

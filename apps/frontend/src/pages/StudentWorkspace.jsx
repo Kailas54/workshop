@@ -208,12 +208,53 @@ export default function StudentWorkspace() {
   };
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ 
+      background: '#1a0b2e', fontFamily: "'Quicksand', sans-serif", color: '#e2e8f0', minHeight: '100vh', display: 'flex', flexDirection: 'column'
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+        
+        /* Purple Workspace Overrides */
+        .header {
+          background: linear-gradient(135deg, #26163b, #150926);
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          padding: 16px 24px;
+        }
+        
+        .main-content {
+          padding: 24px;
+          gap: 24px;
+        }
+        
+        .glass-panel {
+          background: linear-gradient(160deg, #26163b, #150926);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+        }
+        
+        .editor-container {
+          border: 1px solid rgba(216, 180, 254, 0.2);
+          box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+          border-radius: 20px;
+        }
+        
+        .editor-header {
+          background: #201136;
+          border-bottom: 1px solid rgba(216, 180, 254, 0.1);
+        }
+        
+        .terminal-container {
+          background: #110524 !important;
+          color: #d8b4fe !important;
+          border-top: 1px solid rgba(216, 180, 254, 0.2) !important;
+        }
+      `}</style>
+
       <header className="header">
-        <h1>Workspace: <span style={{color: 'var(--text-primary)'}}>{session.id}</span></h1>
+        <h1 style={{ fontWeight: 700, margin: 0, fontSize: '1.5rem', color: '#fff' }}>Workspace: <span style={{color: '#a855f7'}}>{session.id}</span></h1>
         <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
-          <span style={{display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: connected ? 'var(--status-green)' : 'var(--status-red)'}}>
-            <span className="pulse-indicator" style={{background: connected ? 'var(--status-green)' : 'var(--status-red)', boxShadow: `0 0 8px ${connected ? 'var(--status-green)' : 'var(--status-red)'}`}}></span>
+          <span style={{display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: connected ? '#10b981' : '#ef4444', fontWeight: 600}}>
+            <span className="pulse-indicator" style={{background: connected ? '#10b981' : '#ef4444', boxShadow: `0 0 8px ${connected ? '#10b981' : '#ef4444'}`}}></span>
             {connected ? 'Live' : 'Connecting...'}
           </span>
           {badges.map(b => (
