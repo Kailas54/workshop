@@ -30,6 +30,13 @@ export default function ImpropsHero() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#09090b', color: '#fff', position: 'relative', overflow: 'hidden', fontFamily: 'var(--font-sans)' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+        .brand-font {
+          font-family: 'Great Vibes', cursive;
+          font-weight: normal;
+        }
+      `}</style>
       {/* Background Dot Grid & Glows */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 0,
@@ -53,7 +60,7 @@ export default function ImpropsHero() {
       <nav style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 48px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.25rem', fontWeight: 700 }}>
-            <Cpu size={24} color="#a855f7" /> Improps
+            <Cpu size={24} color="#a855f7" /> <span className="brand-font" style={{ fontSize: '1.75rem', paddingRight: '8px' }}>Improps</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '1px', color: '#9ca3af', textTransform: 'uppercase' }}>
             <span style={{color: '#fff', cursor: 'pointer'}}>Courses</span>
@@ -93,7 +100,7 @@ export default function ImpropsHero() {
           </div>
 
           <h1 style={{ fontSize: '4.5rem', fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '24px' }}>
-            Improps Training Institute for creative developers
+            <span className="brand-font" style={{ fontSize: '6rem', color: '#c084fc', paddingRight: '12px' }}>Improps</span> Training Institute for creative developers
           </h1>
           <p style={{ fontSize: '1.125rem', color: '#9ca3af', lineHeight: 1.6, marginBottom: '40px', maxWidth: '480px' }}>
             High-end training & development programs that drop you straight into top tech companies and instantly make your resume stand out.
@@ -133,7 +140,9 @@ export default function ImpropsHero() {
 
                   <form onSubmit={handleSubmit} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', margin: 0 }}>{isLogin ? 'Welcome Back' : 'Join Improps'}</h3>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', margin: 0 }}>
+                      {isLogin ? 'Welcome Back' : <><span style={{fontWeight: 400}}>Join</span> <span className="brand-font" style={{fontSize: '2rem', color: '#c084fc', paddingLeft: '8px'}}>Improps</span></>}
+                    </h3>
                     <button type="button" onClick={() => setShowRoles(false)} style={{
                       background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer',
                       padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center',

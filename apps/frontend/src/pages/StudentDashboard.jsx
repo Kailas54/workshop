@@ -234,7 +234,7 @@ export default function StudentDashboard() {
             
             .dock-card {
               position: relative;
-              aspect-ratio: 3 / 4;
+              aspect-ratio: 1 / 1;
               border-radius: 20px;
               background: linear-gradient(160deg, #6b21a8, #3b0764);
               box-shadow: 
