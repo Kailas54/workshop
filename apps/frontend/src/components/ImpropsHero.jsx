@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowRight, Code, Terminal, CheckCircle2, Cpu } from 'lucide-react';
 import { logIn, signUp } from '../services/auth';
 
@@ -28,6 +28,18 @@ export default function ImpropsHero() {
     }
   };
 
+  // Generate random fireflies that stay stable across renders
+  const fireflies = useMemo(() => {
+    return Array.from({ length: 20 }).map((_, i) => ({
+      id: i,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 5}s`,
+      animationDuration: `${6 + Math.random() * 6}s`,
+      scale: 0.5 + Math.random() * 0.8
+    }));
+  }, []);
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#09090b', color: '#fff', position: 'relative', overflow: 'hidden', fontFamily: 'var(--font-sans)' }}>
       <style>{`
@@ -36,6 +48,39 @@ export default function ImpropsHero() {
           font-family: 'Great Vibes', cursive;
           font-weight: normal;
         }
+        
+        @keyframes float-firefly {
+          0%, 100% {
+            transform: translateY(0) translateX(0);
+            opacity: 0.2;
+          }
+          25% {
+            transform: translateY(-20px) translateX(15px);
+            opacity: 0.8;
+          }
+          50% {
+            transform: translateY(-40px) translateX(-15px);
+            opacity: 1;
+          }
+          75% {
+            transform: translateY(-20px) translateX(25px);
+            opacity: 0.5;
+          }
+        }
+        
+        .firefly {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: #e879f9;
+          border-radius: 50%;
+          box-shadow: 0 0 10px 2px #c084fc, 0 0 20px 4px #a855f7;
+          animation-name: float-firefly;
+          animation-iteration-count: infinite;
+          animation-timing-function: ease-in-out;
+          pointer-events: none;
+          z-index: 1;
+        }
       `}</style>
       {/* Background Dot Grid & Glows */}
       <div style={{
@@ -43,6 +88,17 @@ export default function ImpropsHero() {
         backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)',
         backgroundSize: '24px 24px'
       }}></div>
+
+      {/* Fireflies */}
+      {fireflies.map(ff => (
+        <div key={ff.id} className="firefly" style={{
+          top: ff.top,
+          left: ff.left,
+          animationDelay: ff.animationDelay,
+          animationDuration: ff.animationDuration,
+          transform: `scale(${ff.scale})`
+        }}></div>
+      ))}
       
       {/* Large Purple Glows */}
       <div style={{
@@ -123,12 +179,16 @@ export default function ImpropsHero() {
             }}>
               <div style={{
                 width: '100%', maxWidth: '450px',
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '16px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(40px)',
+                WebkitBackdropFilter: 'blur(40px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+                borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '24px',
                 padding: '32px',
                 position: 'relative',
-                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+                boxShadow: '0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
                 overflow: 'hidden'
               }}>
                 {/* Decorative purple glow inside the modal */}
@@ -192,9 +252,15 @@ export default function ImpropsHero() {
         {/* Right Floating Code Window */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           <div style={{ 
-            background: 'rgba(15, 15, 17, 0.7)', backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px',
-            width: '100%', maxWidth: '550px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%)', 
+            backdropFilter: 'blur(40px)',
+            WebkitBackdropFilter: 'blur(40px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+            borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '24px',
+            width: '100%', maxWidth: '550px', 
+            boxShadow: '0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
             overflow: 'hidden'
           }}>
             {/* Window Header */}
