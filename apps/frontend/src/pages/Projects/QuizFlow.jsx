@@ -4,12 +4,10 @@ import { BookOpen, Check, X, RefreshCw } from 'lucide-react';
 const QUESTIONS = [
   { id: 'q1', text: 'Which planet is known as the Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Saturn'], answer: 'Mars' },
   { id: 'q2', text: 'What is the largest mammal in the world?', options: ['Elephant', 'Blue Whale', 'Giraffe', 'Hippopotamus'], answer: 'Blue Whale' },
-  { id: 'q3', text: 'Who wrote "Romeo and Juliet"?', options: ['Charles Dickens', 'William Shakespeare', 'Jane Austen', 'Mark Twain'], answer: 'William Shakespeare' },
-  { id: 'q4', text: 'What is the chemical symbol for gold?', options: ['Ag', 'Fe', 'Au', 'Cu'], answer: 'Au' },
-  { id: 'q5', text: "Which element is most abundant in the Earth's atmosphere?", options: ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Hydrogen'], answer: 'Nitrogen' }
+  { id: 'q3', text: 'Who wrote "Romeo and Juliet"?', options: ['Charles Dickens', 'William Shakespeare', 'Jane Austen', 'Mark Twain'], answer: 'William Shakespeare' }
 ];
 
-export default function QuizFlow({ executeFunction, isExecuting }) {
+export default function QuizFlow({ executeScript, isExecuting }) {
   const [answers, setAnswers] = useState({});
   const [attemptNumber, setAttemptNumber] = useState(1);
   const [result, setResult] = useState(null);
@@ -20,15 +18,18 @@ export default function QuizFlow({ executeFunction, isExecuting }) {
   };
 
   const submitQuiz = async () => {
-    // Collect answers in order
-    const submitted = QUESTIONS.map(q => answers[q.id] || '');
-    const correct = QUESTIONS.map(q => q.answer);
-
-    const res = await executeFunction('grade_quiz', {
-      submitted_answers: submitted,
-      correct_answers: correct,
-      attempt_number: attemptNumber
-    });
+    const res = await executeScript(
+      {
+        q1_ans: answers['q1'] || '',
+        q1_correct: QUESTIONS[0].answer,
+        q2_ans: answers['q2'] || '',
+        q2_correct: QUESTIONS[1].answer,
+        q3_ans: answers['q3'] || '',
+        q3_correct: QUESTIONS[2].answer,
+        attempt_number: attemptNumber
+      },
+      ['score', 'percentage', 'grade_band', 'q1_is_correct', 'q2_is_correct', 'q3_is_correct', 'review_tip']
+    );
 
     if (res.success && res.data) {
       setResult(res.data);
@@ -162,7 +163,7 @@ export default function QuizFlow({ executeFunction, isExecuting }) {
                 </svg>
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#4c1d95', lineHeight: 1 }}>{Math.round(displayScore)}%</div>
-                  <div style={{ fontSize: '0.9rem', color: '#6b21a8', marginTop: '4px' }}>{result.score} / {result.total}</div>
+                  <div style={{ fontSize: '0.9rem', color: '#6b21a8', marginTop: '4px' }}>{result.score} / 3</div>
                 </div>
               </div>
 
@@ -185,7 +186,8 @@ export default function QuizFlow({ executeFunction, isExecuting }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h3 style={{ color: '#4c1d95', margin: '0 0 8px 0' }}>Detailed Review</h3>
               {QUESTIONS.map((q, i) => {
-                const isCorrect = result.per_question_results ? result.per_question_results[i] : false;
+                const isCorrectVar = `q${i+1}_is_correct`;
+                const isCorrect = result[isCorrectVar] === true;
                 const submitted = answers[q.id];
                 return (
                   <div key={q.id} style={{ background: '#fff', padding: '20px', borderRadius: '12px', borderLeft: `4px solid ${isCorrect ? '#10b981' : '#ef4444'}`, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>

@@ -1,32 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CreditCard, Building2, ChevronRight, Lock, History, IndianRupee } from 'lucide-react';
 
-export default function SimBank({ executeFunction, isExecuting }) {
-  const [screen, setScreen] = useState('welcome'); // welcome, pin, menu, deposit, withdraw, processing, statement, message
+export default function SimBank({ executeScript, isExecuting }) {
+  const [screen, setScreen] = useState('welcome'); // welcome, pin, menu, deposit, withdraw, processing, message
   const [pinAttempt, setPinAttempt] = useState('');
   const [amount, setAmount] = useState('');
   
   // Bank State (simulated in frontend, managed by Python backend logic per action)
   const [balance, setBalance] = useState(15000);
-  const [transactionLog, setTransactionLog] = useState(['Initial deposit Rs.15000']);
   
   const [actionMessage, setActionMessage] = useState('');
-  const [statementLines, setStatementLines] = useState(null);
 
   const CORRECT_PIN = '1234';
 
   const handleAction = async (actionType) => {
     setScreen('processing');
     
-    // Call Python function
-    const res = await executeFunction('atm_action', {
-      action: actionType,
-      pin_attempt: pinAttempt,
-      correct_pin: CORRECT_PIN,
-      balance: balance,
-      amount: Number(amount) || 0,
-      transaction_log: transactionLog
-    });
+    // Call Python script
+    const res = await executeScript(
+      {
+        action: actionType,
+        pin_attempt: pinAttempt,
+        correct_pin: CORRECT_PIN,
+        balance: balance,
+        amount: Number(amount) || 0
+      },
+      ['success', 'new_balance', 'message']
+    );
 
     setTimeout(() => {
       if (res.success && res.data) {
@@ -39,20 +39,10 @@ export default function SimBank({ executeFunction, isExecuting }) {
           }
         } else {
           // Update bank state from backend response
-          if (res.data.balance !== undefined) setBalance(res.data.balance);
+          if (res.data.new_balance !== undefined) setBalance(res.data.new_balance);
           
-          if (res.data.success && (actionType === 'deposit' || actionType === 'withdraw')) {
-            const verb = actionType === 'deposit' ? 'Deposited' : 'Withdrew';
-            setTransactionLog(prev => [...prev, `${verb} Rs.${amount}`]);
-          }
-
-          if (actionType === 'mini_statement') {
-            setStatementLines(res.data.statement_lines || []);
-            setScreen('statement');
-          } else {
-            setActionMessage(res.data.message || (res.data.success ? 'Transaction Successful' : 'Transaction Failed'));
-            setScreen('message');
-          }
+          setActionMessage(res.data.message || (res.data.success ? 'Transaction Successful' : 'Transaction Failed'));
+          setScreen('message');
         }
       } else {
         setActionMessage(res.error || 'Python Error! Check your code.');
@@ -83,7 +73,7 @@ export default function SimBank({ executeFunction, isExecuting }) {
       handleAction('deposit');
     } else if (screen === 'withdraw' && amount) {
       handleAction('withdraw');
-    } else if (screen === 'message' || screen === 'statement') {
+    } else if (screen === 'message') {
       setScreen(pinAttempt.length === 4 && actionMessage !== 'Incorrect PIN. Please try again.' ? 'menu' : 'welcome');
       if (screen === 'message' && actionMessage === 'Incorrect PIN. Please try again.') {
          setPinAttempt('');
@@ -139,10 +129,6 @@ export default function SimBank({ executeFunction, isExecuting }) {
                 <button className="atm-btn" onClick={() => setScreen('withdraw')} style={{ flex: 1, textAlign: 'left' }}>Withdraw Cash</button>
                 <ChevronRight color="#3b82f6" />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="atm-btn" onClick={() => handleAction('mini_statement')} style={{ flex: 1, textAlign: 'left' }}>Mini Statement</button>
-                <ChevronRight color="#3b82f6" />
-              </div>
             </div>
             <button style={{ alignSelf: 'center', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginTop: 'auto' }} onClick={() => { setPinAttempt(''); setScreen('welcome'); }}>
               Cancel & Exit
@@ -180,22 +166,6 @@ export default function SimBank({ executeFunction, isExecuting }) {
           </div>
         );
 
-      case 'statement':
-        return (
-          <div style={{ animation: 'fadeIn 0.3s', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <h2 style={{ margin: '0 0 16px 0', fontSize: '1.25rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <History size={20} color="#3b82f6" /> Mini Statement
-            </h2>
-            <div style={{ background: '#0f172a', padding: '16px', borderRadius: '8px', border: '1px solid #334155', flex: 1, fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
-              {(statementLines || []).length > 0 ? statementLines.map((line, i) => (
-                <div key={i} style={{ borderBottom: '1px dashed #334155', paddingBottom: '8px' }}>{line}</div>
-              )) : (
-                <div style={{ color: '#64748b' }}>No recent transactions</div>
-              )}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: '16px', color: '#64748b', fontSize: '0.85rem' }}>Press any key to continue</div>
-          </div>
-        );
 
       default: return null;
     }

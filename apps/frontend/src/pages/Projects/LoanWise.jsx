@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Landmark, CheckCircle, XCircle, DollarSign, Percent, Calendar, User } from 'lucide-react';
 
-export default function LoanWise({ executeFunction, isExecuting }) {
+export default function LoanWise({ executeScript, isExecuting }) {
   const [loanAmount, setLoanAmount] = useState(500000);
   const [annualRate, setAnnualRate] = useState(8.5);
   const [tenureYears, setTenureYears] = useState(5);
@@ -11,13 +11,16 @@ export default function LoanWise({ executeFunction, isExecuting }) {
   const [result, setResult] = useState(null);
 
   const calculateLoan = async () => {
-    const res = await executeFunction('calculate_emi_and_eligibility', {
-      loan_amount: loanAmount,
-      annual_rate: annualRate,
-      tenure_years: tenureYears,
-      monthly_income: monthlyIncome,
-      age: age
-    });
+    const res = await executeScript(
+      {
+        loan_amount: loanAmount,
+        annual_rate: annualRate,
+        tenure_years: tenureYears,
+        monthly_income: monthlyIncome,
+        age: age
+      },
+      ['emi', 'total_payable', 'total_interest', 'eligible', 'reason']
+    );
 
     if (res.success && res.data) {
       setResult(res.data);

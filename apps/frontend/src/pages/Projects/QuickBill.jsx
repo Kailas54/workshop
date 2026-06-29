@@ -1,43 +1,32 @@
 import React, { useState } from 'react';
 import { Coffee, Plus, Minus, Receipt, CheckCircle } from 'lucide-react';
 
-const MENU = [
-  { id: 'm1', name: 'Cappuccino', price: 150 },
-  { id: 'm2', name: 'Latte', price: 160 },
-  { id: 'm3', name: 'Espresso', price: 120 },
-  { id: 'm4', name: 'Blueberry Muffin', price: 180 },
-  { id: 'm5', name: 'Croissant', price: 140 },
-  { id: 'm6', name: 'Avocado Toast', price: 250 },
-];
-
-export default function QuickBill({ executeFunction, isExecuting }) {
+export default function QuickBill({ executeScript, isExecuting }) {
   const [customerName, setCustomerName] = useState('Alice');
-  const [tableNumber, setTableNumber] = useState(4);
-  const [cart, setCart] = useState({});
+  
+  const [item1Qty, setItem1Qty] = useState(2);
+  const [item2Qty, setItem2Qty] = useState(1);
+
+  const item1Name = "Cappuccino";
+  const item1Price = 150.0;
+
+  const item2Name = "Blueberry Muffin";
+  const item2Price = 180.0;
+
   const [receipt, setReceipt] = useState(null);
 
-  const updateQuantity = (id, delta) => {
-    setCart(prev => {
-      const current = prev[id] || 0;
-      const next = Math.max(0, current + delta);
-      const newCart = { ...prev };
-      if (next === 0) delete newCart[id];
-      else newCart[id] = next;
-      return newCart;
-    });
-  };
-
   const handleGenerateBill = async () => {
-    const items = Object.entries(cart).map(([id, qty]) => {
-      const item = MENU.find(m => m.id === id);
-      return { name: item.name, price: item.price, quantity: qty };
-    });
-
-    const res = await executeFunction('generate_bill', {
-      customer_name: customerName,
-      table_number: tableNumber,
-      items: items
-    });
+    const res = await executeScript(
+      {
+        item1_name: item1Name,
+        item1_price: item1Price,
+        item1_qty: item1Qty,
+        item2_name: item2Name,
+        item2_price: item2Price,
+        item2_qty: item2Qty
+      },
+      ['subtotal', 'discount', 'tax', 'total', 'is_vip']
+    );
 
     if (res.success && res.data) {
       setReceipt(res.data);
@@ -60,30 +49,35 @@ export default function QuickBill({ executeFunction, isExecuting }) {
               onChange={e => setCustomerName(e.target.value)}
               style={{ flex: 1, padding: '8px 12px', border: '1px solid #d6d3d1', borderRadius: '6px', fontSize: '0.9rem' }}
             />
-            <input 
-              type="number" 
-              placeholder="Table" 
-              value={tableNumber}
-              onChange={e => setTableNumber(Number(e.target.value))}
-              style={{ width: '80px', padding: '8px 12px', border: '1px solid #d6d3d1', borderRadius: '6px', fontSize: '0.9rem' }}
-            />
           </div>
         </div>
         
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px', alignContent: 'start' }}>
-          {MENU.map(item => (
-            <div key={item.id} style={{ background: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid #e7e5e4', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{item.name}</div>
-                <div style={{ color: '#78716c', fontSize: '0.85rem' }}>Rs. {item.price}</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', background: '#f5f5f4', padding: '4px', borderRadius: '8px' }}>
-                <button onClick={() => updateQuantity(item.id, -1)} style={{ padding: '4px', border: 'none', background: '#fff', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={14} /></button>
-                <span style={{ fontWeight: 600, fontSize: '0.9rem', width: '30px', textAlign: 'center' }}>{cart[item.id] || 0}</span>
-                <button onClick={() => updateQuantity(item.id, 1)} style={{ padding: '4px', border: 'none', background: '#fff', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} /></button>
-              </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          
+          <div style={{ background: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid #e7e5e4', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{item1Name}</div>
+              <div style={{ color: '#78716c', fontSize: '0.9rem' }}>Rs. {item1Price}</div>
             </div>
-          ))}
+            <div style={{ display: 'flex', alignItems: 'center', background: '#f5f5f4', padding: '4px', borderRadius: '8px', gap: '8px' }}>
+              <button onClick={() => setItem1Qty(Math.max(0, item1Qty - 1))} style={{ padding: '8px', border: 'none', background: '#fff', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={16} /></button>
+              <span style={{ fontWeight: 600, fontSize: '1.1rem', width: '30px', textAlign: 'center' }}>{item1Qty}</span>
+              <button onClick={() => setItem1Qty(item1Qty + 1)} style={{ padding: '8px', border: 'none', background: '#fff', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={16} /></button>
+            </div>
+          </div>
+
+          <div style={{ background: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid #e7e5e4', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{item2Name}</div>
+              <div style={{ color: '#78716c', fontSize: '0.9rem' }}>Rs. {item2Price}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', background: '#f5f5f4', padding: '4px', borderRadius: '8px', gap: '8px' }}>
+              <button onClick={() => setItem2Qty(Math.max(0, item2Qty - 1))} style={{ padding: '8px', border: 'none', background: '#fff', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={16} /></button>
+              <span style={{ fontWeight: 600, fontSize: '1.1rem', width: '30px', textAlign: 'center' }}>{item2Qty}</span>
+              <button onClick={() => setItem2Qty(item2Qty + 1)} style={{ padding: '8px', border: 'none', background: '#fff', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={16} /></button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -99,33 +93,32 @@ export default function QuickBill({ executeFunction, isExecuting }) {
             }}>
               <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#c2410c' }}>Café Python</h3>
-                <div style={{ fontSize: '0.75rem', color: '#78716c' }}>Table {receipt.table_number} • {receipt.customer_name}</div>
+                <div style={{ fontSize: '0.75rem', color: '#78716c' }}>{customerName}</div>
               </div>
 
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '8px', borderBottom: '1px solid #e7e5e4', paddingBottom: '16px', marginBottom: '16px' }}>
-                {(receipt.line_items || []).map((line, i) => (
-                  <div key={i}>{line}</div>
-                ))}
+                {item1Qty > 0 && <div>{item1Name} x{item1Qty}</div>}
+                {item2Qty > 0 && <div>{item2Name} x{item2Qty}</div>}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.9rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#78716c' }}>Subtotal</span>
-                  <span>Rs. {receipt.subtotal?.toFixed(2)}</span>
+                  <span>Rs. {Number(receipt.subtotal || 0).toFixed(2)}</span>
                 </div>
-                {receipt.discount > 0 && (
+                {Number(receipt.discount) > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#16a34a' }}>
                     <span>Discount</span>
-                    <span>-Rs. {receipt.discount?.toFixed(2)}</span>
+                    <span>-Rs. {Number(receipt.discount).toFixed(2)}</span>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#78716c' }}>Tax (5%)</span>
-                  <span>Rs. {receipt.tax?.toFixed(2)}</span>
+                  <span>Rs. {Number(receipt.tax || 0).toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.1rem', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e7e5e4' }}>
                   <span>Total</span>
-                  <span>Rs. {receipt.total?.toFixed(2)}</span>
+                  <span>Rs. {Number(receipt.total || 0).toFixed(2)}</span>
                 </div>
               </div>
 
@@ -135,16 +128,11 @@ export default function QuickBill({ executeFunction, isExecuting }) {
                 </div>
               )}
               
-              {receipt.message && (
-                <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.85rem', fontStyle: 'italic', color: '#78716c' }}>
-                  "{receipt.message}"
-                </div>
-              )}
             </div>
           ) : (
             <div style={{ color: '#a8a29e', textAlign: 'center' }}>
               <Receipt size={48} style={{ opacity: 0.2, margin: '0 auto 12px' }} />
-              <div>No bill generated yet. Add items and run the code.</div>
+              <div>No bill generated yet. Set quantities and run code.</div>
             </div>
           )}
         </div>
@@ -153,7 +141,7 @@ export default function QuickBill({ executeFunction, isExecuting }) {
           <button 
             style={{ width: '100%', padding: '14px', background: '#c2410c', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: isExecuting ? 'wait' : 'pointer', opacity: isExecuting ? 0.7 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
             onClick={handleGenerateBill}
-            disabled={isExecuting || Object.keys(cart).length === 0}
+            disabled={isExecuting}
           >
             {isExecuting ? 'Processing...' : 'Generate Bill'}
           </button>
@@ -168,3 +156,4 @@ export default function QuickBill({ executeFunction, isExecuting }) {
     </div>
   );
 }
+

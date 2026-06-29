@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Heart, ArrowRight } from 'lucide-react';
 
-export default function VitalCheck({ executeFunction, isExecuting }) {
+export default function VitalCheck({ executeScript, isExecuting }) {
   const [height, setHeight] = useState(170);
   const [weight, setWeight] = useState(70);
   const [age, setAge] = useState(25);
@@ -11,12 +11,15 @@ export default function VitalCheck({ executeFunction, isExecuting }) {
   const [displayBmi, setDisplayBmi] = useState(0);
 
   const calculateHealth = async () => {
-    const res = await executeFunction('assess_health', {
-      height_cm: height,
-      weight_kg: weight,
-      age: age,
-      activity_level: activity
-    });
+    const res = await executeScript(
+      {
+        height_cm: height,
+        weight_kg: weight,
+        age: age,
+        activity_level: activity
+      },
+      ['bmi', 'category', 'recommendation']
+    );
 
     if (res.success && res.data) {
       setResult(res.data);
