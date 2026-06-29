@@ -6,6 +6,7 @@ import { db } from '../services/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { BookOpen, Award, Share2, Terminal, Trophy, Target, Play, Save, Star, Zap, CheckCircle2, Lock, GitBranch } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import GradientCards from '../components/GradientCards';
 
 const WORKSHOPS = [
   { id: 'demo-session-123', title: 'Python Bootcamp - Batch 1', date: 'Today, 2:00 PM', status: 'live' },
@@ -138,7 +139,7 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="app-container" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', gap: '24px', display: 'flex', flexDirection: 'column' }}>
+    <div className="app-container" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', gap: '24px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
       
       {/* Header */}
       <header className="glass-panel" style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: '16px' }}>
@@ -228,6 +229,14 @@ export default function StudentDashboard() {
               <span style={{ fontWeight: 600 }}>Projects</span>
               <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'linear-gradient(135deg, #a855f7, #ec4899)', color: '#fff', fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.05em', padding: '2px 6px', borderRadius: '8px' }}>NEW</span>
             </button>
+          </div>
+          
+          {/* Featured Learning Paths / Gradient Cards */}
+          <div style={{ marginTop: '8px' }}>
+            <h2 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Star size={20} color="#f59e0b" /> Recommended Modules
+            </h2>
+            <GradientCards />
           </div>
 
           {/* Upcoming Workshops */}
