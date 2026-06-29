@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Editor from '@monaco-editor/react';
+import Editor, { loader } from '@monaco-editor/react';
+
+loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
 import { Play, RotateCcw, Hand, Loader2, Eye, X } from 'lucide-react';
 import { usePyodide } from './usePyodide';
 
